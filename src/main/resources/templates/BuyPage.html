@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title class="logo">Vendo</title>
+    <link rel="stylesheet" th:href="@{/CSS/main.css}">
+</head>
+<body>
+    <a th:href="@{/home}" class="btn-home">Home</a>
+
+    <table class="auction-list">
+        <thead>
+            <tr>
+                <th>Codice Asta</th>
+                <th>Nome Articoli</th>
+                <th>Offerta Massima</th>
+                <th>Tempo Mancante</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="auction : ${auctions}">
+                <td><a th:href="@{/auction(id=${auction.id})}" th:text="${auction.id}">test_id</a></td>
+                <td>
+                    <div th:each="item : ${auction.items}">
+                        <span th:text="${item.title}">test_item_title</span>
+                    </div>
+                </td>
+                <td th:text="${auction.maxBid}">1000</td>
+                <td th:text="${#dates.daysBetween(#dates.createNow(), auction.endDate)} + ' giorni e ' + ${#dates.hoursBetween(#dates.createNow(), auction.endDate) % 24} + ' ore'">10 giorni e 5 ore</td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="auction-list">
+        <thead>
+        <tr>
+            <th>Codice Asta</th>
+            <th>Nome Articoli</th>
+            <th>Offerta Massima</th>
+            <th>Tempo Mancante</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="auction : ${auctions}">
+            <td><a th:href="@{/auction(id=${auction.id})}" th:text="${auction.id}">test_id</a></td>
+            <td>
+                <div th:each="item : ${auction.items}">
+                    <span th:text="${item.title}">test_item_title</span>
+                </div>
+            </td>
+            <td th:text="${auction.maxBid}">1000</td>
+            <td th:text="${#dates.daysBetween(#dates.createNow(), auction.endDate)} + ' giorni e ' + ${#dates.hoursBetween(#dates.createNow(), auction.endDate) % 24} + ' ore'">10 giorni e 5 ore</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table class="auction-list">
+        <thead>
+        <tr>
+            <th>Codice Asta</th>
+            <th>Nome Articoli</th>
+            <th>Offerta Massima</th>
+            <th>Scadenza</th>
+            <th>Prezzo Iniziale</th>
+            <th>Incremento Minimo</th>
+            <th>Stato</th>
+            <th>Tempo di Creazione</th>
+            <th>Nome Aggiudicatario</th>
+            <th>Prezzo Finale</th>
+            <th>Indirizzo</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="auction : ${auctions}">
+            <td><a th:href="@{/auction(id=${auction.id})}" th:text="${auction.id}">test_id</a></td>
+            <td>
+                <div th:each="item : ${auction.items}">
+                    <span th:text="${item.title}">test_item_title</span>
+                </div>
+            </td>
+            <td th:text="${auction.maxBid}">1000</td>
+            <td th:text="${#dates.daysBetween(#dates.createNow(), auction.endDate)} + ' giorni e ' + ${#dates.hoursBetween(#dates.createNow(), auction.endDate) % 24} + ' ore'">10 giorni e 5 ore</td>
+            <td th:text="${auction.startingPrice}">1000</td>
+            <td th:text="${auction.minIncrement}">100</td>
+            <td th:text="${auction.status}">open</td>
+            <td th:text="${auction.created_at}">2021-09-10 12:00:00</td>
+            <td th:text="${result.winner}">test_bidder_name</td>
+            <td th:text="${result.final_price}">1200</td>
+            <td th:text="${result.address}">test_address</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="pagination" th:if="${totalPages > 1}">
+        <!-- previous page -->
+        <a th:href="@{/playlist(title=${title},
+                          order='default',
+                          page=${currentPage - 1})}"
+           class="btn-paginate"
+           th:if="${currentPage > 1}">
+            Previous
+        </a>
+        <span th:unless="${currentPage > 1}" class="btn-paginate disabled">Previous</span>
+
+        <!-- current page -->
+        <span th:text="'Page ' + ${currentPage} + ' of ' + ${totalPages}"></span>
+
+        <!-- next page -->
+        <a th:href="@{/playlist(title=${title},
+                          order='default',
+                          page=${currentPage + 1})}"
+           class="btn-paginate"
+           th:if="${currentPage < totalPages}">
+            Next
+        </a>
+        <span th:unless="${currentPage < totalPages}" class="btn-paginate disabled">Next</span>
+    </div>
+
+    <section class="create-playlist">
+        <h3>Select Songs to Add</h3>
+        <form th:action="@{/addSong(title=${title})}" method="post">
+            <input type="hidden" name="sourcePage" value="playlist">
+            <div class="song-list">
+                <div class="song-item" th:each="song : ${allSongsByUser}">
+                    <label>
+                        <input type="checkbox"
+                               class="song-checkbox"
+                               name="selectedSongs"
+                               th:value="${song.title + '||' + song.artist}"
+                               th:checked="${allListSongsByUser.contains(song.title + '||' + song.artist)}">
+                        <span th:text="${song.title}">nuan nuan</span> -
+                        <span th:text="${song.artist}">liang jun jun</span>
+                        <span th:text="'(' + ${song.album} + ')'"
+                              th:if="${song.album}">(dsj)</span>
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">add to current playlist</button>
+        </form>
+    </section>
+
+</body>
+</html>

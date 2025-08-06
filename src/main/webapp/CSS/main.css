@@ -1,0 +1,260 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.sell-btn, .buy-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.sell-btn {
+    background-color: #28a745;
+}
+
+.sell-btn:hover {
+    background-color: #218838;
+    transform: scale(1.05);
+}
+
+.buy-btn {
+    background-color: #007bff;
+}
+
+.buy-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+.form-group {
+    margin-bottom: 15px;
+
+}
+
+label {
+    margin-bottom: 5px;
+    padding: 5px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select {
+    width: 50%;
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+/* Playlist Grid */
+.playlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.playlist-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.logo {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.user-info {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.btn-logout {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    background-color: #e74c3c;
+    transition: background-color 0.2s;
+}
+
+.btn-logout:hover {
+    background-color: #c0392b;
+}
+
+.auction-list {
+    width: 50%;
+    opacity: 1 !important;
+    display: block !important;
+}
+
+.item-list {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.item-list input.item-checkbox {
+    margin-right: 10px;
+}
+.item-list table {
+    border-collapse: collapse;
+    width: auto;
+}
+.item-list th, .item-list td {
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.register-link a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+.name-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 1.2rem;
+}
+
+.alert {
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+.alert.hidden {
+    display: none;
+}
+
+.pagination {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin: 1rem 0;
+}
+
+.btn-paginate {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-paginate:hover:not(.disabled) {
+    background-color: #e0e0e0;
+    border-color: #ccc;
+    cursor: pointer;
+}
+
+.btn-paginate.disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border-color: #dee2e6;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.pagination span {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.navbar {
+    background-color: #2c3e50;
+    color: white;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.upload-section {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+input[type="file"] {
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    background: white;
+    width: 100%;
+}
+
+.player-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.now-playing {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#cover-art {
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+
