@@ -28,9 +28,8 @@ public class UserDAO {
                 }
             }
 
-            // Insert new user (Insecure plain text storage - for demonstration only)
             insertStmt.setString(1, username);
-            insertStmt.setString(2, password); // In production, use BCrypt
+            insertStmt.setString(2, password);
             insertStmt.setString(3, first_name);
             insertStmt.setString(4, last_name);
             insertStmt.setString(5, address);
@@ -86,5 +85,22 @@ public class UserDAO {
                 rs.getString("username"),
                 rs.getString("password_hash")
         );
+    }
+
+    public String findNameById(int id) throws SQLException {
+        String sql = "SELECT first_name, last_name FROM users WHERE id = ?";
+
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("first_name") + " " + rs.getString("last_name");
+                }
+            }
+        } catch (SQLException e) {
+            throw new SQLException("Error finding user by id", e);
+        }
+        return "";
     }
 }

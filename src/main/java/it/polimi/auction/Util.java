@@ -1,16 +1,15 @@
 package it.polimi.auction;
 
+import it.polimi.auction.beans.Auction;
 import it.polimi.auction.beans.User;
+import it.polimi.auction.dao.AuctionDAO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 public class Util {
     public static User verifySession(HttpServletRequest request, HttpServletResponse response) throws IOException {

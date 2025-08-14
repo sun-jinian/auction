@@ -40,7 +40,7 @@ public class ThymeleafConfig implements ServletContextListener {
         TemplateEngine engine = new TemplateEngine();
         JakartaServletWebApplication webApp = JakartaServletWebApplication.buildApplication(context);
         WebApplicationTemplateResolver resolver = new WebApplicationTemplateResolver(webApp);
-        resolver.setPrefix("/templates/");
+        resolver.setPrefix("/WEB-INF/templates/");
         resolver.setSuffix(".html");
         resolver.setTemplateMode(TemplateMode.HTML);
         resolver.setCharacterEncoding("UTF-8");

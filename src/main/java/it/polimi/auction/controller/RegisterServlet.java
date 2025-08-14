@@ -31,7 +31,7 @@ public class RegisterServlet extends HttpServlet {
         String password = request.getParameter("password");
         String firstName = request.getParameter("first_name").trim();
         String lastName = request.getParameter("last_name").trim();
-        String address = request.getParameter("address").trim();
+        String address = request.getParameter("address");
 
         try {
             UserDAO userDAO = new UserDAO(DBUtil.getConnection());

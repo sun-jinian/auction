@@ -4,8 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 
 public class OpenAuction implements Serializable {
-    Auction auction;
-    List<Item> items;
+    private Auction auction;
+    private double maxOffer;
+    private List<Item> items;
+    private String timeLeft;
 
     public Auction getAuction() {
         return auction;
@@ -21,5 +23,21 @@ public class OpenAuction implements Serializable {
 
     public void setItems(List<Item> items) {
         this.items = items;
+    }
+
+    public double getMaxOffer() {
+        return maxOffer;
+    }
+
+    public void setMaxOffer(double maxOffer) {
+        this.maxOffer = maxOffer;
+    }
+
+    public String getTimeLeft() {
+        return timeLeft;
+    }
+
+    public void setTimeLeft(String timeLeft) {
+        this.timeLeft = timeLeft;
     }
 }

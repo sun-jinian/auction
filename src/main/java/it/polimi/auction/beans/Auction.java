@@ -88,4 +88,5 @@ public class Auction implements Serializable {
     public void setClosed(boolean status) {
         this.closed = status;
     }
+
 }
