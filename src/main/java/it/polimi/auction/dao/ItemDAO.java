@@ -40,7 +40,7 @@ public class ItemDAO {
         ResultSet rs = null;
         try (PreparedStatement stmt = con.prepareStatement("SELECT * FROM items WHERE id NOT IN (SELECT item_id FROM auction_items) AND created_by =? ORDER BY name ")){
             stmt.setInt(1, userId);
-            stmt.executeQuery();
+            rs = stmt.executeQuery();
             while (rs.next()) {
                 Item item = new Item();
                 item.setId(rs.getInt("id"));

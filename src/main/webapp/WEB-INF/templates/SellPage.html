@@ -5,15 +5,31 @@
     <title class="logo">Vendo</title>
     <link rel="stylesheet" th:href="@{/CSS/main.css}">
 </head>
+<style>
+    input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    }
+</style>
 <body>
 <a th:href="@{/home}" class="btn-home">Home</a>
 
+<div th:if="${error}" class="error-alert">
+    <p th:text="${error}" style="color: red;"></p>
+</div>
+
+<div th:if="${message}" class="error-alert">
+    <p th:text="${message}" style="color: green;"></p>
+</div>
+
+<span><h1>Asta aperte</h1></span>
 <table class="auction-list">
     <thead>
     <tr>
         <th>Codice Asta</th>
         <th>Nome Articoli</th>
-        <th>Offerta Massima</th>
+        <th>Offerta Massima €</th>
         <th>Tempo Mancante</th>
     </tr>
     </thead>
@@ -23,6 +39,7 @@
         <td>
             <div th:each="item : ${openAuction.items}">
                 <span th:text="${item.title}">test_item_title</span>
+                <img th:src="@{${item.cover_image}}" alt="Item image" style="width:30px;height:30px;margin-left:5px;">
             </div>
         </td>
         <td th:text="${openAuction.maxOffer}">1000</td>
@@ -31,34 +48,36 @@
     </tbody>
 </table>
 
-<table class="auction-list">
+<span><h1>Asta chiusi</h1></span>
+<table class="auction-  list">
     <thead>
-    <tr>
+    <tr class="col-articoli">
         <th>Codice Asta</th>
         <th>Nome Articoli</th>
-        <th>Offerta Massima</th>
         <th>Scadenza</th>
-        <th>Prezzo Iniziale</th>
-        <th>Incremento Minimo</th>
+        <th>Prezzo Iniziale €</th>
+        <th>Incremento Minimo €</th>
         <th>Stato</th>
         <th>Tempo di Creazione</th>
         <th>Nome Aggiudicatario</th>
-        <th>Prezzo Finale</th>
+        <th>Prezzo Finale €</th>
         <th>Indirizzo</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="closedAuction : ${closedAuctions}">
         <td><a th:href="@{/auction(id=${closedAuction.auction.auctionId})}" th:text="${closedAuction.auction.auctionId}">test_id</a></td>
-        <td>
-            <div th:each="item : ${closedAuction.items}">
+        <td class="col-articoli">
+            <div th:each="item : ${closedAuction.items}" style="white-space:nowrap;">
+                <img th:src="@{${item.cover_image}}" alt="Item image" style="width:30px;height:30px;margin-left:5px;">
                 <span th:text="${item.title}">test_item_title</span>
             </div>
         </td>
+        <td th:text="${#temporals.format(closedAuction.auction.ending_at, 'yyyy-MM-dd HH:mm:ss')}">100</td>
         <td th:text="${closedAuction.auction.startingPrice}">1000</td>
         <td th:text="${closedAuction.auction.minIncrement}">100</td>
         <td th:text="${closedAuction.auction.closed ? 'chiuso' : 'open'}">open</td>
-        <td th:text="${closedAuction.auction.created_at}">2021-09-10 12:00:00</td>
+        <td th:text="${#temporals.format(closedAuction.auction.created_at, 'yyyy-MM-dd HH:mm:ss')}">2021-09-10 12:00:00</td>
         <td th:text="${closedAuction.result.winner_name}">test_bidder_name</td>
         <td th:text="${closedAuction.result.final_price}">1200</td>
         <td th:text="${closedAuction.result.shipping_address}">test_address</td>
@@ -71,30 +90,34 @@
     <form th:action="@{/uploadItem}" method="POST" enctype="multipart/form-data">
         <div class="form-row">
             <div class="form-group">
-                <label>Nome Articolo:</label>
+                <label>*Nome Articolo:</label>
                 <label>
-                    <input type="text" name="item" required maxlength="100">
+                    <input type="text" name="item" required maxlength="100" placeholder="nome articolo(max 100 caratteri)">
                 </label>
             </div>
             <div class="form-group">
-                <label>Prezzo:</label>
+                <label>*Prezzo €:</label>
                 <label>
-                    <input type="text" name="price" required maxlength="100">
+                    <input type="number" name="price" required maxlength="100" min="0" placeholder="prezzo in euro(max 100 caratteri)">
                 </label>
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label>Descrizione:</label>
-                <label>
-                    <input type="text" name="description" required>
-                </label>
+                <label for="description">*Descrizione:</label>
+                <textarea id="description"
+                          name="description"
+                          required
+                          placeholder="Inserisci una breve descrizione dell'articolo (max 255 caratteri)"
+                          maxlength="255"
+                          rows="4"
+                          style="width:100%; resize:vertical;"></textarea>
             </div>
         </div>
 
         <div class="form-group">
-            <label>Immagine:</label>
+            <label>*Immagine:</label>
             <input type="file" name="cover" accept="image/*">
         </div>
 
@@ -104,71 +127,79 @@
 
 <section class="create-auction">
     <h2>Crea una Asta</h2>
-    <form th:action="@{/auction}" method="post">
+    <form th:action="@{/auction}" method="POST">
         <input type="hidden" name="sourcePage" value="home">
         <div class="form-group">
-            <label>Asta Title:</label>
+            <label>*Asta Title:</label>
             <label>
                 <input type="text"
                        name="title"
                        required
                        minlength="3"
-                       maxlength="100">
+                       maxlength="100"
+                       placeholder="Inserisci il titolo dell'asta(max 100 caratteri)"
+                       style="width: 100%;">
             </label>
-            <label>Minimo Incremento:</label>
+            <label>*Minimo Incremento €:</label>
             <label>
-                <input type="text"
+                <input type="number"
                        name="minIncrement"
-                       placeholder="Minimum 1"
+                       placeholder="Inserisci un numero intero positivo"
+                       step="1"
                        required
-                       min="1">
+                       min="1"
+                       style="width: 100%;">
             </label>
-            <label>Scadenza:</label>
+            <label>*Scadenza:</label>
             <label>
                 <input type="datetime-local"
                        name="endDate"
                        required
-                       th:attr="min=${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}">
+                       th:attr="min=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd\'T\'HH:mm')}">
             </label>
         </div>
         <button type="submit" class="btn-primary">Crea Asta</button>
 
 
         <h3>Seleziona gli articoli da inserire</h3>
-        <section class="available-items" th:each="item : ${itemsAvailable}">
-            <input type="checkbox"
-                   class="item-checkbox"
-                   name="selectedItems"
-                   th:value="${item.id}">
+        <section class="available-items">
             <table>
                 <thead>
                 <tr>
+                    <th></th>
                     <th>Immagine</th>
                     <th>ID</th>
                     <th>Nome</th>
-                    <th>Prezzo</th>
+                    <th>Prezzo €</th>
                     <th>Descrizione</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="item : ${itemsAvailable}">
+                    <td style="width: 20px; text-align: center;">
+                        <label>
+                            <input type="checkbox"
+                                   class="item-checkbox"
+                                   name="selectedItems"
+                                   th:value="${item.id}"
+                                   style="width: 20px; height: 20px;">
+                        </label>
+                    </td>
                     <td>
-                        <img th:src="@{${item.cover_image}}" alt="cover" class="cover" style="width:50px; height:auto;">
+                        <img th:src="@{${item.cover_image}}"
+                             alt="cover" class="cover"
+                             style="width:50px; height:auto;">
                     </td>
                     <td th:text="${item.id}">item_id</td>
                     <td th:text="${item.title}">item_title</td>
                     <td th:text="${item.price}">item_price</td>
-                    <td th:text="${item.descrizione}">item_descrizione</td>
+                    <td th:text="${item.description}">item_descrizione</td>
                 </tr>
                 </tbody>
             </table>
         </section>
     </form>
 </section>
-
-<div th:if="${error}" class="error-alert">
-    <p th:text="${error}"></p>
-</div>
 
 </body>
 </html>

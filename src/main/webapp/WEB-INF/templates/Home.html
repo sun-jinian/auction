@@ -25,6 +25,7 @@
     .navbar .logo {
         text-align: center;
         margin-bottom: 5px;
+        color: black;
     }
 
     .navbar .user-info {
@@ -35,7 +36,7 @@
         display: inline-block;
         margin-top: 5px;
         padding: 5px 10px;
-        color: #007bff;
+        color: black;
         text-decoration: none;
         border: 1px solid #007bff;
         border-radius: 5px;
@@ -93,10 +94,10 @@
 
 <main class="container">
     <div id="sell-container">
-        <a href="/sell" class="sell-btn">Sell</a>
+        <a th:href="@{/sell}" class="sell-btn">Sell</a>
     </div>
     <div id="buy-container">
-        <a href="/buy" class="buy-btn">Buy</a>
+        <a th:href="@{/buy}" class="buy-btn">Buy</a>
     </div>
 </main>
 

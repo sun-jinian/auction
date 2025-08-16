@@ -69,21 +69,6 @@ button {
     cursor: pointer;
 }
 
-/* Playlist Grid */
-.playlist-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.playlist-card {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-}
-
 .logo {
     margin: 0;
     font-size: 1.8rem;
@@ -109,9 +94,22 @@ button {
 }
 
 .auction-list {
-    width: 50%;
-    opacity: 1 !important;
-    display: block !important;
+    table-layout: auto;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.auction-list th,
+.auction-list td {
+    padding: 8px;
+    vertical-align: top;
+    height: auto;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.col-articoli {
+    min-width: max-content;
 }
 
 .item-list {
@@ -197,6 +195,12 @@ button {
     opacity: 0.7;
 }
 
+.description-input {
+    height: 40px;
+    padding: 8px 10px;
+    font-size: 16px;
+}
+
 .pagination span {
     color: #666;
     font-size: 0.9em;
@@ -204,7 +208,6 @@ button {
 
 .navbar {
     background-color: #2c3e50;
-    color: white;
     padding: 1rem 0;
     margin-bottom: 2rem;
     display: flex;
@@ -231,24 +234,6 @@ input[type="file"] {
     border: 1px solid #ddd;
     background: white;
     width: 100%;
-}
-
-.player-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 1rem;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-}
-
-.now-playing {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    max-width: 800px;
-    margin: 0 auto;
 }
 
 #cover-art {

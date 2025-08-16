@@ -59,34 +59,75 @@ public class CloseServlet extends HttpServlet {
                 // check if auction exists
                 if (auction == null) {
                     request.setAttribute("error", "Auction not found");
-                    request.getRequestDispatcher("/auction").forward(request, response);
+                    doGet(request, response);
                     return;
                 }
 
                 // check if user is the owner of the auction
-                if(auction.getUserId() == user.getId()){
+                if(auction.getUserId() != user.getId()){
                     request.setAttribute("error", "You are not the owner of this auction");
-                    request.getRequestDispatcher("/auction").forward(request, response);
+                    doGet(request, response);
                     return;
                 }
 
                 //check if auction is expired
                 if (auction.getEnding_at().isAfter(LocalDateTime.now())) {
                     request.setAttribute("error", "Auction has not ended yet");
-                    request.getRequestDispatcher("/auction").forward(request, response);
+                    doGet(request, response);
                     return;
                 }
 
                 // check if auction is already closed
                 if (auction.isClosed()) {
                     request.setAttribute("error", "Auction is already closed");
-                    request.getRequestDispatcher("/auction").forward(request, response);
+                    doGet(request, response);
                     return;
                 }
                 auctionDAO.closeAuction(auction_id);
+                auctionDAO.updateResult(auction_id);
                 auction.setClosed(true);
 
-                boolean trulyCloseable = auction.getEnding_at().isBefore(LocalDateTime.now().plusMinutes(10));
+                context.setVariable("auction", auction);
+                context.setVariable("offers", offers);
+                context.setVariable("user", user);
+                context.setVariable("message", "Auction closed successfully");
+
+                templateEngine.process("DETTAGLIO", context, response.getWriter());
+
+            } catch (NumberFormatException e) {
+                //if auction_id is not a correct number, redirect to error page
+                request.setAttribute("error", "wrong format auction id");
+                doGet(request, response);
+            } catch (SQLException e) {
+                request.setAttribute("error", "Database connection failed");
+                doGet(request, response);
+            }
+        }
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        String auction_id_Str = request.getParameter("id");
+        int auction_id;
+        if(session.getAttribute("user") instanceof User user){
+            try {
+                auction_id = Integer.parseInt(auction_id_Str);
+                AuctionDAO auctionDAO = new AuctionDAO(DBUtil.getConnection());
+                Auction auction = auctionDAO.findById(auction_id);
+                List<Offer> offers = auctionDAO.findAllOffersByAuction(auction_id);
+
+                WebContext context = new WebContext(
+                        JakartaServletWebApplication.buildApplication(getServletContext())
+                                .buildExchange(request, response),
+                        request.getLocale()
+                );
+                boolean trulyCloseable = auction.getEnding_at().isBefore(LocalDateTime.now()) && !auction.isClosed();
                 context.setVariable("closeable", trulyCloseable);
                 context.setVariable("auction", auction);
                 context.setVariable("offers", offers);
@@ -97,10 +138,10 @@ public class CloseServlet extends HttpServlet {
             } catch (NumberFormatException e) {
                 //if auction_id is not a correct number, redirect to error page
                 request.setAttribute("error", "wrong format auction id");
-                request.getRequestDispatcher("/auction").forward(request, response);
-            } catch (SQLException e) {
+                request.getRequestDispatcher("/sell").forward(request, response);
+            } catch (SQLException e){
                 request.setAttribute("error", "Database connection failed");
-                request.getRequestDispatcher("/auction").forward(request, response);
+                request.getRequestDispatcher("/sell").forward(request, response);
             }
         }
     }

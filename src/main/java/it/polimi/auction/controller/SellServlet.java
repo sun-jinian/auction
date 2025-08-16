@@ -35,6 +35,7 @@ public class SellServlet extends HttpServlet {
         this.templateEngine = (TemplateEngine) getServletContext().getAttribute("templateEngine");
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
@@ -57,7 +58,7 @@ public class SellServlet extends HttpServlet {
 
                 context.setVariable("openAuctions", openAuctions);
                 context.setVariable("closedAuctions", closedAuctions);
-                context.setVariable("NotInAuctionItems", NotInAuctionItems);
+                context.setVariable("itemsAvailable", NotInAuctionItems);
                 context.setVariable("user", user);
 
                 templateEngine.process("SellPage", context, response.getWriter());
@@ -70,5 +71,10 @@ public class SellServlet extends HttpServlet {
             }
 
         }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request, response);
     }
 }

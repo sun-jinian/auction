@@ -25,6 +25,8 @@ import java.util.UUID;
 
 @WebServlet("/uploadItem")
 public class UploadItemServlet extends HttpServlet {
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
         HttpSession session = request.getSession(false);
@@ -35,8 +37,10 @@ public class UploadItemServlet extends HttpServlet {
 
         User user = (User) request.getSession().getAttribute("user");
         // serve per mettere in database indirizzo del file nel disco
-        String appPath = request.getServletContext().getRealPath("/");
         int user_id = user.getId();
+        String uploadBaseDir = getServletContext().getInitParameter("upload.dir");
+        Path userUploadDir = Paths.get(uploadBaseDir, "user_" + user_id);
+//      String appPath = request.getServletContext().getRealPath("/");
 
 
         String item = request.getParameter("item");
@@ -58,18 +62,17 @@ public class UploadItemServlet extends HttpServlet {
                 validateFileType(coverPart, "image/");
             }
             String coverFileName = generateSafeFileName(coverPart);
-            Path userUploadDir  = Paths.get(appPath, "uploads", "user_" + user_id);
 
             coverPath = userUploadDir.resolve(coverFileName);
-            saveFile(coverPart, coverPath.toString());
-            //save relatives paths in database
-            String relativeCoverPath = "/uploads/user_" + user.getId() + "/" + coverFileName;
 
             try {
                 Files.createDirectories(userUploadDir);
             } catch (IOException e) {
                 throw new ServletException("Can't create upload directory", e);
             }
+            saveFile(coverPart, coverPath.toString());
+            //save relatives paths in database
+            String relativeCoverPath = "/uploads/user_" + user.getId() + "/" + coverFileName;
 
             try {
                 double price = Double.parseDouble(priceStr);
@@ -80,14 +83,15 @@ public class UploadItemServlet extends HttpServlet {
                     request.getRequestDispatcher("/sell").forward(request, response);
                 }
             } catch (NumberFormatException e) {
-                e.printStackTrace();
+                request.setAttribute("error", "Price must be a number");
+                request.getRequestDispatcher("/sell").forward(request, response);
             }
 
         } catch (Exception e) {
             if (coverPath != null) {
                 Files.deleteIfExists(coverPath);
             }
-            request.setAttribute("error", e.getMessage());
+            request.setAttribute("error", "caricamento no riuscito");
             request.getRequestDispatcher("/sell").forward(request, response);
         }
 

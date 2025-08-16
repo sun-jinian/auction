@@ -30,7 +30,7 @@ public class LoginServlet extends HttpServlet {
                 HttpSession session = request.getSession();
                 Optional<User> authenticatedUser = uDAO.findByUsername(username);
                 authenticatedUser.ifPresent(user -> session.setAttribute("user", user));
-                response.sendRedirect(request.getContextPath() + "/Home.html");
+                request.getRequestDispatcher("/home").forward(request, response);
             } else if (result == 0) {
                 request.setAttribute("error", "wrong password");
                 request.getRequestDispatcher("/error").forward(request, response);

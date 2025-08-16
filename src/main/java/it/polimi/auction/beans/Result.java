@@ -8,6 +8,9 @@ public class Result implements Serializable {
     private String winner_name;
     private double final_price;
     private String shipping_address;
+
+    public Result() {
+    }
     public Result(int auction_id, int winner_id,String winner_name, double final_price, String shipping_address) {
         this.auction_id = auction_id;
         this.winner_id = winner_id;

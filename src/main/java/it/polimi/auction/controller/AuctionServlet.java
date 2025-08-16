@@ -23,7 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@WebServlet("/playlist")
+@WebServlet("/auction")
 public class AuctionServlet extends HttpServlet {
 
     private TemplateEngine templateEngine;
@@ -40,15 +40,15 @@ public class AuctionServlet extends HttpServlet {
      * @throws ServletException servlet exception
      * @throws IOException io exception
      */
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        String auction_id_Str = request.getParameter("auction_id");
+        String auction_id_Str = request.getParameter("id");
         int auction_id;
         if(session.getAttribute("user") instanceof User user){
             try {
@@ -62,7 +62,8 @@ public class AuctionServlet extends HttpServlet {
                                 .buildExchange(request, response),
                         request.getLocale()
                 );
-
+                boolean trulyCloseable = auction.getEnding_at().isBefore(LocalDateTime.now()) && !auction.isClosed();
+                context.setVariable("closeable", trulyCloseable);
                 context.setVariable("auction", auction);
                 context.setVariable("offers", offers);
                 context.setVariable("user", user);
@@ -87,6 +88,7 @@ public class AuctionServlet extends HttpServlet {
      * @param response response
      * @throws ServletException servlet exception
      */
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         if(Util.verifySession(request, response) instanceof User user) {
@@ -95,6 +97,11 @@ public class AuctionServlet extends HttpServlet {
                 String min_increment = requireParameter(request, "minIncrement");
                 String endDateStr = requireParameter(request,"endDate");
                 LocalDateTime endDate = LocalDateTime.parse(endDateStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                if(request.getParameterValues("selectedItems") == null || request.getParameterValues("selectedItems").length == 0){
+                    request.setAttribute("error", "Need to select at least one item");
+                    request.getRequestDispatcher("/sell").forward(request, response);
+                    return;
+                }
                 String[] checkedItems = request.getParameterValues("selectedItems");
                 int[] checkIds = new int[checkedItems.length];
                 for (int i = 0; i < checkedItems.length; i++){
@@ -103,15 +110,16 @@ public class AuctionServlet extends HttpServlet {
                 AuctionDAO auctionDAO = new AuctionDAO(DBUtil.getConnection());
                 ItemDAO itemDAO = new ItemDAO(DBUtil.getConnection());
                 double startingPrice = itemDAO.calculateTotalPrice(checkIds);
-                auctionDAO.createAuction(user.getId(), auction_title, startingPrice, Integer.parseInt(min_increment), endDate);
-
+                int auction_id = auctionDAO.createAuction(user.getId(), auction_title, startingPrice, Integer.parseInt(min_increment), endDate);
+                int affectedRows = auctionDAO.insertItems(auction_id, checkIds);
+                request.setAttribute("message", "Auction created successfully with id: " + auction_id + " has "+ affectedRows + " items");
                 request.getRequestDispatcher("/sell").forward(request, response);
             } catch (SQLException e) {
                 request.setAttribute("error", "Database connection failed");
-                request.getRequestDispatcher("/error").forward(request, response);
+                request.getRequestDispatcher("/sell").forward(request, response);
             } catch (IllegalArgumentException | ServletException e) {
-                request.setAttribute("error", e.getMessage());
-                request.getRequestDispatcher("/error").forward(request, response);
+                request.setAttribute("error", "Illegal Argument or Missing required parameter");
+                request.getRequestDispatcher("/sell").forward(request, response);
             }
         }
     }

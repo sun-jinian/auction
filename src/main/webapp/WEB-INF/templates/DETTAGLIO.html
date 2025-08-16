@@ -33,6 +33,14 @@
 </head>
 <body>
 
+<div th:if="${error}" class="error-alert">
+    <p th:text="${error}" style="color: red;"></p>
+</div>
+
+<div th:if="${message}" class="error-alert">
+    <p th:text="${message}" style="color: green;"></p>
+</div>
+
 <h1>Dettaglio Asta</h1>
 
 <div class="auction-details">
@@ -76,7 +84,7 @@
     </form>
 </div>
 
-<a class="back-link" th:href="@{/home}">Torna alla home</a>
+<a class="back-link" th:href="@{/sell}">Torna alla pagina </a>
 
 </body>
 </html>
