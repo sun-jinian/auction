@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="refresh" content="5">
-    <title th:text="'Dettaglio asta - ' + ${auction.auctionId}">Dettaglio asta</title>
+    <title>Offerta</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,18 +26,16 @@
         table th {
             background-color: #f2f2f2;
         }
-        .back-link {
-            display: inline-block;
-            margin-top: 15px;
+
+        input[type="number"] {
+            width: 250px;
+            padding: 5px;
+            font-size: 14px;
         }
     </style>
 </head>
-<body>
 
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <span th:text="'hello, '+${user.username}">Username</span>
-    <a class="back-link" th:href="@{/sell}">Torna alla VENDO</a>
-</div>
+<body>
 
 <div th:if="${error}" class="error-alert">
     <p th:text="${error}" style="color: red;"></p>
@@ -47,9 +45,10 @@
     <p th:text="${message}" style="color: green;"></p>
 </div>
 
-
-
-<h1>Dettaglio Asta</h1>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <span th:text="'hello, '+${user.username}">Username</span>
+    <a class="btn-home" th:href="@{/buy}">ACQUISTO</a>
+</div>
 
 <div class="auction-details">
     <p><strong>ID asta:</strong> <span th:text="${auction.auctionId}"></span></p>
@@ -85,13 +84,45 @@
     </table>
 </div>
 
-<div th:if="${closeable}">
-    <form th:action="@{/close}" method="post">
-        <input type="hidden" name="auction_id" th:value="${auction.auctionId}"/>
-        <button type="submit">CHIUDI</button>
+<div>
+    <form th:action="@{/offer(auctionId=${auction.auctionId})}" method="post">
+        <input type="number"
+               name="offeredPrice"
+               th:min="${minimumOffer}"
+               step="0.01"
+               max="9999999.99"
+               required
+               th:placeholder="'Inserisci almeno &euro; ' + ${minimumOffer}"/>
+        <button type="submit">offer</button>
     </form>
 </div>
 
+<span><h1>Dati articoli</h1></span>
+<span th:if="${items.size() == 0}">Nessuna articolo trovato (sicuramente c'e un errore)</span>
+<table class="auction-list">
+    <thead>
+    <tr>
+        <th>Codice Articolo</th>
+        <th>Nome Articoli</th>
+        <th>Descrizione</th>
+        <th>Prezzo Articolo €</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+        <td th:text="${item.id}">test_id</td>
+        <td>
+            <div th:each="item : ${items}">
+                <img th:src="@{${item.cover_image}}" alt="Item image"
+                     style="width:30px;height:30px;margin-left:5px;">
+                <span th:text="${item.title}">test_item_title</span>
+            </div>
+        </td>
+        <td th:text="${item.description}">test_item_title</td>
+        <td th:text="${item.price}">test_item_price</td>
+    </tr>
+    </tbody>
+</table>
 
 </body>
 </html>

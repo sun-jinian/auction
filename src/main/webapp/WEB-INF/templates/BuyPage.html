@@ -2,9 +2,98 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title class="logo">Vendo</title>
+    <title class="logo">ACQUISTO</title>
     <link rel="stylesheet" th:href="@{/CSS/main.css}">
 </head>
+
 <body>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <span th:text="'hello, '+${user.username}">Username</span>
+    <a th:href="@{/home}" class="btn-home">Home</a>
+</div>
+
+<div th:if="${error}" class="error-alert">
+    <p th:text="${error}" style="color: red;"></p>
+</div>
+
+<div th:if="${message}" class="error-alert">
+    <p th:text="${message}" style="color: green;"></p>
+</div>
+
+<form th:action="@{/buy}" method="get" style="margin-bottom: 20px;">
+    <label for="keywords">Cerca per parola chiave:</label>
+    <input type="text" id="keywords" name="keywords" placeholder="Inserisci parola chiave" required>
+    <button type="submit">Cerca</button>
+</form>
+
+<span><h1>Asta Risultati della ricerca:</h1></span>
+<span th:if="${openAuctions.size() == 0}">Nessuna asta in corso trovata.</span>
+<div th:if="${openAuctions.size() > 0}">
+    <table class="auction-list">
+        <thead>
+        <tr>
+            <th>Codice Asta</th>
+            <th>Nome Articoli</th>
+            <th>Offerta Massima €</th>
+            <th>Tempo Mancante</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="openAuction : ${openAuctions}">
+            <td><a th:href="@{/offer(id=${openAuction.auction.auctionId})}" th:text="${openAuction.auction.auctionId}">test_id</a></td>
+            <td>
+                <div th:each="item : ${openAuction.items}">
+                    <img th:src="@{${item.cover_image}}" alt="Item image" style="width:30px;height:30px;margin-left:5px;">
+                    <span th:text="${item.title}">test_item_title</span>
+                </div>
+            </td>
+            <td th:text="${openAuction.maxOffer}">1000</td>
+            <td th:text="${openAuction.timeLeft}">10 giorni e 5 ore</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!--  Offerte aggiudicate -->
+<span><h1>Le mie offerte aggiudicate</h1></span>
+<span th:if="${wonAuctions.size() == 0}">Nessuna offerta aggiudicata.</span>
+<table class="auction-list">
+    <thead>
+    <tr>
+        <th>Codice Asta</th>
+        <th>Codice Articolo</th>
+        <th>Nome Articoli</th>
+        <th>Descrizione</th>
+        <th>Prezzo Articolo €</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="wonAuction : ${wonAuctions}">
+        <td th:text="${wonAuction.auction.auctionId}">test_id</td>
+        <td>
+            <div th:each="item : ${wonAuction.items}">
+                <span th:text="${item.id}">test_item_id</span>
+            </div>
+        </td>
+        <td>
+            <div th:each="item : ${wonAuction.items}">
+                <img th:src="@{${item.cover_image}}" alt="Item image"
+                     style="width:30px;height:30px;margin-left:5px;">
+                <span th:text="${item.title}">test_item_title</span>
+            </div>
+        </td>
+        <td>
+            <div th:each="item : ${wonAuction.items}">
+                <span th:text="${item.description}">test_item_title</span>
+            </div>
+        </td>
+        <td>
+            <div th:each="item : ${wonAuction.items}">
+                <span th:text="${item.price}">test_item_title</span>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
 </body>
 </html>

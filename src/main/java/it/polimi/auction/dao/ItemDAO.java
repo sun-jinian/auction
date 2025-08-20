@@ -29,6 +29,27 @@ public class ItemDAO {
         }
     }
 
+    public List<Item> findAllItemInAuction(int auction_id) throws SQLException {
+        List<Item> items = new ArrayList<>();
+        ResultSet rs = null;
+        try (PreparedStatement stmt = con.prepareStatement("SELECT * FROM items WHERE id IN (SELECT item_id FROM auction_items WHERE auction_id = ?) ")){
+            stmt.setInt(1, auction_id);
+            rs = stmt.executeQuery();
+            while (rs.next()) {
+                Item item = new Item();
+                item.setId(rs.getInt("id"));
+                item.setTitle(rs.getString("name"));
+                item.setDescription(rs.getString("description"));
+                item.setCover_image(rs.getString("cover_image"));
+                item.setPrice(rs.getDouble("price"));
+                items.add(item);
+            }
+        }catch (SQLException e){
+            throw new SQLException(e);
+        }
+        return items;
+    }
+
     /**
      * Find all items that are not in auction and belong to the user with the given id.
      * @param userId the id of the user

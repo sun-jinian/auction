@@ -13,7 +13,10 @@
     }
 </style>
 <body>
-<a th:href="@{/home}" class="btn-home">Home</a>
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <span th:text="'hello, '+${user.username}">Username</span>
+    <a th:href="@{/home}" class="btn-home">Home</a>
+</div>
 
 <div th:if="${error}" class="error-alert">
     <p th:text="${error}" style="color: red;"></p>
@@ -38,8 +41,8 @@
         <td><a th:href="@{/auction(id=${openAuction.auction.auctionId})}" th:text="${openAuction.auction.auctionId}">test_id</a></td>
         <td>
             <div th:each="item : ${openAuction.items}">
-                <span th:text="${item.title}">test_item_title</span>
                 <img th:src="@{${item.cover_image}}" alt="Item image" style="width:30px;height:30px;margin-left:5px;">
+                <span th:text="${item.title}">test_item_title</span>
             </div>
         </td>
         <td th:text="${openAuction.maxOffer}">1000</td>
@@ -49,7 +52,7 @@
 </table>
 
 <span><h1>Asta chiusi</h1></span>
-<table class="auction-  list">
+<table class="auction-list">
     <thead>
     <tr class="col-articoli">
         <th>Codice Asta</th>
@@ -98,7 +101,8 @@
             <div class="form-group">
                 <label>*Prezzo €:</label>
                 <label>
-                    <input type="number" name="price" required maxlength="100" min="0" placeholder="prezzo in euro(max 100 caratteri)">
+                    <input type="number" name="price" required max="9999999.99"
+                           step="0.01" min="0" placeholder="prezzo in euro(max 100 caratteri)">
                 </label>
             </div>
         </div>

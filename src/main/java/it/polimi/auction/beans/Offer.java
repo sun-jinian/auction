@@ -7,14 +7,14 @@ public class Offer implements Serializable {
     private int id;
     private int auctionId;
     private int userId;
-    private int offeredPrice;
+    private double offeredPrice;
     private LocalDateTime offeredTime;
 
     public Offer(){
 
     }
 
-    public Offer(int id, int auctionId, int userId, int offeredPrice, LocalDateTime offeredTime) {
+    public Offer(int id, int auctionId, int userId, double offeredPrice, LocalDateTime offeredTime) {
         this.id = id;
         this.auctionId = auctionId;
         this.userId = userId;
@@ -46,11 +46,11 @@ public class Offer implements Serializable {
         this.userId = userId;
     }
 
-    public int getOfferedPrice() {
+    public double getOfferedPrice() {
         return offeredPrice;
     }
 
-    public void setOfferedPrice(int offeredPrice) {
+    public void setOfferedPrice(double offeredPrice) {
         this.offeredPrice = offeredPrice;
     }
 

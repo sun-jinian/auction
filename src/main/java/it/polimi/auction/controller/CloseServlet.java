@@ -6,6 +6,7 @@ import it.polimi.auction.beans.Auction;
 import it.polimi.auction.beans.Offer;
 import it.polimi.auction.beans.User;
 import it.polimi.auction.dao.AuctionDAO;
+import it.polimi.auction.dao.ItemDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -84,7 +85,10 @@ public class CloseServlet extends HttpServlet {
                     return;
                 }
                 auctionDAO.closeAuction(auction_id);
-                auctionDAO.updateResult(auction_id);
+                if(auctionDAO.updateResult(auction_id) > 0){ //items in auction effectively sold
+                    ItemDAO itemDAO = new ItemDAO(DBUtil.getConnection());
+                    itemDAO.sellItemInAuction(auction_id);
+                }
                 auction.setClosed(true);
 
                 context.setVariable("auction", auction);

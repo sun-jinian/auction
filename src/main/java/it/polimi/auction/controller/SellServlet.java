@@ -36,7 +36,7 @@ public class SellServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -66,8 +66,6 @@ public class SellServlet extends HttpServlet {
             }catch (SQLException e) {
                 context.setVariable("error", "Failed to load auctions: " + e.getMessage());
                 templateEngine.process("SellPage", context, response.getWriter());
-
-                request.getRequestDispatcher("/error").forward(request, response);
             }
 
         }

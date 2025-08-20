@@ -22,30 +22,88 @@ public class AuctionDAO {
      */
     public Map<Integer, Result> getResultsByAuction(List<Auction> auctions) throws SQLException {
         Map<Integer, Result> allResults = new HashMap<>();
-        ResultSet rs = null;
-        for(Auction auction : auctions){
-            try(PreparedStatement stmt = con.prepareStatement("SELECT * FROM results WHERE auction_id =?")){
-                stmt.setInt(1, auction.getAuctionId());
-                rs = stmt.executeQuery();
-                if(rs.next()){
-                    int winner_id = rs.getInt("winner_id");
-                    UserDAO userDAO = new UserDAO(con);
-                    String winner_name = userDAO.findNameById(winner_id);
-                    Result result = new Result(rs.getInt("auction_id"), rs.getInt("winner_id"),winner_name, rs.getDouble("final_price"), rs.getString("shipping_address"));
-                    allResults.put(auction.getAuctionId(), result);
-                }else {
-                    Result result = new Result(auction.getAuctionId(), -1, "Nessun vincitore", -1, "");
-                    allResults.put(auction.getAuctionId(), result);
+        if (auctions.isEmpty()) return allResults;
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT r.auction_id, r.winner_id, r.final_price, r.shipping_address, u.username AS winner_name " +
+                        "FROM results r " +
+                        "LEFT JOIN users u ON r.winner_id = u.id " +
+                        "WHERE r.auction_id IN ("
+        );
+
+        for (int i = 0; i < auctions.size(); i++) {
+            if (i > 0) sql.append(",");
+            sql.append("?");
+        }
+        sql.append(")");
+
+        try (PreparedStatement stmt = con.prepareStatement(sql.toString())) {
+            int idx = 1;
+            for (Auction auction : auctions) {
+                stmt.setInt(idx++, auction.getAuctionId());
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                Map<Integer, Result> resultsFromDB = new HashMap<>();
+                while (rs.next()) {
+                    Result result = new Result(
+                            rs.getInt("auction_id"),
+                            rs.getInt("winner_id"),
+                            rs.getString("winner_name") != null ? rs.getString("winner_name") : "Nessun vincitore",
+                            rs.getDouble("final_price"),
+                            rs.getString("shipping_address")
+                    );
+                    resultsFromDB.put(result.getAuction_id(), result);
                 }
-            }catch (SQLException e){
-                throw new SQLException(e);
-            }finally{
-                try{if(rs!=null) rs.close();}catch(Exception ignored){}
+
+                // auction with no result are added with a default result
+                for (Auction auction : auctions) {
+                    allResults.put(auction.getAuctionId(),
+                            resultsFromDB.getOrDefault(
+                                    auction.getAuctionId(),
+                                    new Result(auction.getAuctionId(), -1, "Nessun vincitore", -1, "")
+                            ));
+                }
             }
         }
+
         return allResults;
     }
 
+    public int insertOffer(int userId, int auctionId, double offeredPrice) throws SQLException {
+        String sql = "INSERT INTO offers (user_id, auction_id, offered_price) VALUES (?, ?, ?)";
+
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, auctionId);
+            stmt.setDouble(3, offeredPrice);
+
+            return stmt.executeUpdate();
+        }
+    }
+
+    /**
+     * return max offered price of auction given id
+     * @param auctionId should be the id of the auction.
+     * @return max offered price of auction given id.
+     * @throws SQLException
+     */
+    public double getMaxOfferOfAuction(int auctionId) throws SQLException {
+        String sql = "SELECT MAX(offered_price) FROM offers WHERE auction_id = ?";
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, auctionId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next() ? rs.getDouble(1) : 0;
+            }
+        }
+    }
+
+    /**
+     * Create a map of <K,V> where K is auction_id and V is the maximum offered price.
+     * @param auctions should be a list of auctions.
+     * @return map contains <K,V> where K is auction_id and V is the maximum offered price.
+     * @throws SQLException
+     */
     public Map<Integer, Double> getMaxOffersByAuction(List<Auction> auctions) throws SQLException {
         Map<Integer, Double> maxOffers = new HashMap<>();
         for (Auction auction : auctions) {
@@ -64,8 +122,6 @@ public class AuctionDAO {
                         }
                     }
                 }
-            } catch (SQLException e) {
-                throw new SQLException(e);
             }
         }
         return maxOffers;
@@ -79,25 +135,21 @@ public class AuctionDAO {
      */
     public Map<Integer, List<Item>> allItemsByAuction(List<Auction> auctions) throws SQLException {
         Map<Integer, List<Item>> items = new HashMap<>();
-        ResultSet rs = null;
         for(Auction auction : auctions){
             items.put(auction.getAuctionId(), new ArrayList<>());
             try(PreparedStatement stmt = con.prepareStatement("SELECT * FROM auction_items JOIN items ON auction_items.item_id = items.id WHERE auction_id =?")){
                 stmt.setInt(1, auction.getAuctionId());
-                rs = stmt.executeQuery();
-                while(rs.next()){
-                    Item item = new Item();
-                    item.setId(rs.getInt("id"));
-                    item.setTitle(rs.getString("name"));
-                    item.setDescription(rs.getString("description"));
-                    item.setCover_image(rs.getString("cover_image"));
-                    item.setPrice(rs.getDouble("price"));
-                    items.get(auction.getAuctionId()).add(item);
+                try(ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Item item = new Item();
+                        item.setId(rs.getInt("id"));
+                        item.setTitle(rs.getString("name"));
+                        item.setDescription(rs.getString("description"));
+                        item.setCover_image(rs.getString("cover_image"));
+                        item.setPrice(rs.getDouble("price"));
+                        items.get(auction.getAuctionId()).add(item);
+                    }
                 }
-            }catch (SQLException e){
-                throw new SQLException(e);
-            }finally{
-                try{if(rs!=null) rs.close();}catch(Exception ignored){}
             }
         }
         return items;
@@ -111,26 +163,22 @@ public class AuctionDAO {
      */
     public List<Auction> findAllAuctionsNotClosed(int userId) throws SQLException {
         List<Auction> auctions = new ArrayList<>();
-        ResultSet rs = null;
         try(PreparedStatement stmt = con.prepareStatement("SELECT * FROM auctions WHERE closed = 0 AND creator_id =? ORDER BY expiration ASC " )){
             stmt.setInt(1, userId);
-            rs =stmt.executeQuery();
-            while(rs.next()){
-                Auction auction = new Auction();
-                auction.setAuctionId(rs.getInt("id"));
-                auction.setUserId(rs.getInt("creator_id"));
-                auction.setStartingPrice(rs.getDouble("starting_price"));
-                auction.setMinIncrement(rs.getInt("min_increment"));
-                auction.setEnding_at(rs.getObject("expiration", LocalDateTime.class));
-                auction.setTitle(rs.getString("title"));
-                auction.setCreated_at(rs.getObject("created_at", LocalDateTime.class));
-                auction.setClosed(rs.getBoolean("closed"));
-                auctions.add(auction);
+            try(ResultSet rs =stmt.executeQuery()) {
+                while (rs.next()) {
+                    Auction auction = new Auction();
+                    auction.setAuctionId(rs.getInt("id"));
+                    auction.setUserId(rs.getInt("creator_id"));
+                    auction.setStartingPrice(rs.getDouble("starting_price"));
+                    auction.setMinIncrement(rs.getInt("min_increment"));
+                    auction.setEnding_at(rs.getObject("expiration", LocalDateTime.class));
+                    auction.setTitle(rs.getString("title"));
+                    auction.setCreated_at(rs.getObject("created_at", LocalDateTime.class));
+                    auction.setClosed(rs.getBoolean("closed"));
+                    auctions.add(auction);
+                }
             }
-        }catch (SQLException e){
-            throw new SQLException(e);
-        }finally{
-            try{if(rs!=null) rs.close();}catch(Exception ignored){}
         }
         return auctions;
     }
@@ -156,7 +204,7 @@ public class AuctionDAO {
             Duration duration = Duration.between(now, end);
 
             if (duration.isNegative() || duration.isZero()) {
-                openAuction.setTimeLeft("Asta terminata");
+                openAuction.setTimeLeft("Tempo Scaduta");
             } else {
                 long days = duration.toDays();
                 long hours = duration.toHours() % 24;
@@ -199,106 +247,126 @@ public class AuctionDAO {
      */
     public List<Auction> findAllAuctionClosed(int userId) throws SQLException {
         List<Auction> auctions = new ArrayList<>();
-        ResultSet rs = null;
         try(PreparedStatement stmt = con.prepareStatement("SELECT * FROM auctions WHERE closed = 1 AND creator_id =? ORDER BY expiration " )){
             stmt.setInt(1, userId);
-            rs =stmt.executeQuery();
-            while(rs.next()){
-                Auction auction = new Auction();
-                auction.setAuctionId(rs.getInt("id"));
-                auction.setUserId(rs.getInt("creator_id"));
-                auction.setStartingPrice(rs.getDouble("starting_price"));
-                auction.setMinIncrement(rs.getInt("min_increment"));
-                auction.setEnding_at(rs.getObject("expiration", LocalDateTime.class));
-                auction.setTitle(rs.getString("title"));
-                auction.setCreated_at(rs.getObject("created_at", LocalDateTime.class));
-                auction.setClosed(rs.getBoolean("closed"));
-                auctions.add(auction);
+            try(ResultSet rs =stmt.executeQuery()) {
+                while (rs.next()) {
+                    Auction auction = new Auction();
+                    auction.setAuctionId(rs.getInt("id"));
+                    auction.setUserId(rs.getInt("creator_id"));
+                    auction.setStartingPrice(rs.getDouble("starting_price"));
+                    auction.setMinIncrement(rs.getInt("min_increment"));
+                    auction.setEnding_at(rs.getObject("expiration", LocalDateTime.class));
+                    auction.setTitle(rs.getString("title"));
+                    auction.setCreated_at(rs.getObject("created_at", LocalDateTime.class));
+                    auction.setClosed(rs.getBoolean("closed"));
+                    auctions.add(auction);
+                }
             }
-        }catch (SQLException e){
-            throw new SQLException(e);
-        }finally{
-            try{if(rs!=null) rs.close();}catch(Exception ignored){}
         }
         return auctions;
     }
 
+    /**
+     * return auction by auction_id
+     * @param auctionId should be the id of the auction.
+     * @return the auction with the given id or null if not found.
+     * @throws SQLException
+     */
     public Auction findById(int auctionId) throws SQLException {
         Auction auction = null;
-        ResultSet rs = null;
-        try(PreparedStatement stmt = con.prepareStatement("SELECT * FROM auctions WHERE id = ?")){
+        String sql = "SELECT * FROM auctions WHERE id = ?";
+
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setInt(1, auctionId);
-            rs =stmt.executeQuery();
-            if(rs.next()){
-                auction = new Auction();
-                auction.setAuctionId(rs.getInt("id"));
-                auction.setUserId(rs.getInt("creator_id"));
-                auction.setStartingPrice(rs.getDouble("starting_price"));
-                auction.setMinIncrement(rs.getInt("min_increment"));
-                auction.setEnding_at(rs.getObject("expiration", LocalDateTime.class));
-                auction.setTitle(rs.getString("title"));
-                auction.setCreated_at(rs.getObject("created_at", LocalDateTime.class));
-                auction.setClosed(rs.getBoolean("closed"));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    auction = new Auction();
+                    auction.setAuctionId(rs.getInt("id"));
+                    auction.setUserId(rs.getInt("creator_id"));
+                    auction.setStartingPrice(rs.getDouble("starting_price"));
+                    auction.setMinIncrement(rs.getInt("min_increment"));
+                    auction.setEnding_at(rs.getObject("expiration", LocalDateTime.class));
+                    auction.setTitle(rs.getString("title"));
+                    auction.setCreated_at(rs.getObject("created_at", LocalDateTime.class));
+                    auction.setClosed(rs.getBoolean("closed"));
+                }
             }
-        }catch (SQLException e){
-            throw new SQLException(e);
-        }finally{
-            try{if(rs!=null) rs.close();}catch(Exception ignored){}
         }
         return auction;
     }
 
+    /**
+     * This method returns all the offers related to an auction.
+     * @param auctionId should be the id of the auction.
+     * @return list of offers related to the auction.
+     * @throws SQLException
+     */
     public List<Offer> findAllOffersByAuction(int auctionId) throws SQLException {
-        ResultSet rs = null;
         List<Offer> offers = new ArrayList<>();
-        try(PreparedStatement stmt = con.prepareStatement("SELECT * FROM offers WHERE auction_id = ? ORDER BY offer_time DESC")){
+
+        String sql = "SELECT * FROM offers WHERE auction_id = ? ORDER BY offer_time DESC";
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setInt(1, auctionId);
-            rs =stmt.executeQuery();
-            while(rs.next()){
-                Offer offer = new Offer();
-                offer.setId(rs.getInt("id"));
-                offer.setAuctionId(rs.getInt("auction_id"));
-                offer.setUserId(rs.getInt("user_id"));
-                offer.setOfferedPrice(rs.getInt("offered_price"));
-                offer.setOfferedTime(rs.getObject("offer_time", LocalDateTime.class));
-                offers.add(offer);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Offer offer = new Offer();
+                    offer.setId(rs.getInt("id"));
+                    offer.setAuctionId(rs.getInt("auction_id"));
+                    offer.setUserId(rs.getInt("user_id"));
+                    offer.setOfferedPrice(rs.getDouble("offered_price"));
+                    offer.setOfferedTime(rs.getObject("offer_time", LocalDateTime.class));
+                    offers.add(offer);
+                }
             }
-        }catch (SQLException e){
-            throw new SQLException(e);
-        }finally{
-            try{if(rs!=null) rs.close();}catch(Exception ignored){}
         }
         return offers;
     }
 
+    /**
+     * close an auction by setting the closed flag to true.
+     * @param auctionId should be the id of the auction to be closed.
+     * @return affected rows or 0 closure failed
+     * @throws SQLException
+     */
     public int closeAuction(int auctionId) throws SQLException {
         int affectedRows = 0;
-        try(PreparedStatement stmt = con.prepareStatement("UPDATE auctions SET closed = 1 WHERE id = ?")){
+        try (PreparedStatement stmt = con.prepareStatement(
+                "UPDATE auctions SET closed = 1 WHERE id = ?")) {
             stmt.setInt(1, auctionId);
             affectedRows = stmt.executeUpdate();
-        }catch (SQLException e){
-            throw new SQLException(e);
         }
         return affectedRows;
     }
 
+    /**
+     * given an user id, it returns the shipping_address of the user
+     * @param userId
+     * @return
+     * @throws SQLException
+     */
     public String findUserAddressById(int userId) throws SQLException {
         String address = "";
-        try(PreparedStatement stmt = con.prepareStatement("SELECT address FROM users WHERE id = ?")){
+        try (PreparedStatement stmt = con.prepareStatement(
+                "SELECT address FROM users WHERE id = ?")) {
             stmt.setInt(1, userId);
-            try(ResultSet rs = stmt.executeQuery()){
-                if(rs.next()){
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
                     address = rs.getString("address");
                 }
             }
-        }catch (SQLException e){
-            throw new SQLException(e);
         }
         return address;
     }
 
-
-
+    /**
+     * invoked whenever an auction is closed, if there is a winner, it updates the results table with the winner and final price
+     * @param auctionId auction to be updated
+     * @return affected rows or 0 if no result found
+     * @throws SQLException
+     */
     public int updateResult(int auctionId) throws SQLException {
         int affectedRows = 0;
         //seleziona il id del user che ha vinto
@@ -321,6 +389,16 @@ public class AuctionDAO {
         }
     }
 
+    /**
+     * create a new auction with the given parameters and insert it into the database.
+     * @param userId
+     * @param title
+     * @param startingPrice
+     * @param minIncrement
+     * @param ending_at
+     * @return created auction id
+     * @throws SQLException
+     */
     public int createAuction(int userId,String title , double startingPrice, int minIncrement, LocalDateTime ending_at) throws SQLException {
         String sql = "INSERT INTO auctions (creator_id, title, starting_price, min_increment, expiration) VALUES (?,?,?,?,?)";
         try (PreparedStatement stmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -345,17 +423,163 @@ public class AuctionDAO {
         }
     }
 
+    /**
+     * Create a link between an auction and 1+ item
+     * @param auctionId
+     * @param items
+     * @return
+     * @throws SQLException
+     */
     public int insertItems(int auctionId, int[] items) throws SQLException {
         int affectedRows = 0;
-        try (PreparedStatement stmt = con.prepareStatement("INSERT INTO auction_items (auction_id, item_id) VALUES (?,?)")) {
+        try (PreparedStatement stmt = con.prepareStatement(
+                "INSERT INTO auction_items (auction_id, item_id) VALUES (?,?)")) {
             for (int item : items) {
                 stmt.setInt(1, auctionId);
                 stmt.setInt(2, item);
-                affectedRows += stmt.executeUpdate();
+                stmt.addBatch();
             }
-        } catch (SQLException e) {
-            throw new SQLException(e);
+            int[] results = stmt.executeBatch();
+            for (int r : results) {
+                affectedRows += r;
+            }
         }
         return affectedRows;
+    }
+
+    /**
+     * This method returns all auctions containing
+     * @param keywords should be a list of keywords to search for.
+     * @return list of open auctions with their items.
+     * @throws SQLException
+     */
+    public List<OpenAuction> findAllOpenAuctionByKeywords(String[] keywords) throws SQLException {
+        List<OpenAuction> openAuctions = new ArrayList<>();
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT DISTINCT a.* " +
+                        "FROM auctions a " +
+                        "JOIN auction_items ai ON ai.auction_id = a.id " +
+                        "JOIN items i ON i.id = ai.item_id " +
+                        "WHERE a.closed = 0 " +
+                        "AND a.expiration > NOW()"  // not expired
+        );
+
+        // 2. link all keywords with OR
+        if (keywords != null && keywords.length > 0) {
+            sql.append(" AND (");
+            for (int i = 0; i < keywords.length; i++) {
+                if (i > 0) sql.append(" OR ");
+                sql.append("(i.name LIKE ? OR i.description LIKE ?)");
+            }
+            sql.append(")");
+        }
+
+        // ORDER DESCENDING by expiration date
+        sql.append(" ORDER BY TIMESTAMPDIFF(MINUTE, NOW(), a.expiration) DESC");
+
+        try (PreparedStatement stmt = con.prepareStatement(sql.toString())) {
+            int idx = 1;
+
+            if (keywords != null) {
+                for (String kw : keywords) {
+                    String like = "%" + kw + "%";
+                    stmt.setString(idx++, like);
+                    stmt.setString(idx++, like);
+                }
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                List<Auction> auctions = new ArrayList<>();
+                while (rs.next()) {
+                    Auction auction = new Auction();
+                    auction.setAuctionId(rs.getInt("id"));
+                    auction.setUserId(rs.getInt("creator_id"));
+                    auction.setStartingPrice(rs.getDouble("starting_price"));
+                    auction.setMinIncrement(rs.getInt("min_increment"));
+                    auction.setEnding_at(rs.getObject("expiration", LocalDateTime.class));
+                    auction.setTitle(rs.getString("title"));
+                    auction.setCreated_at(rs.getObject("created_at",LocalDateTime.class));
+                    auction.setClosed(rs.getBoolean("closed"));
+                    auctions.add(auction);
+                }
+
+                Map<Integer, List<Item>> allItemsByAuction = allItemsByAuction(auctions);
+                Map<Integer, Double> maxOffersByAuction = getMaxOffersByAuction(auctions);
+
+                for (Auction auction : auctions) {
+                    OpenAuction openAuction = new OpenAuction();
+                    openAuction.setAuction(auction);
+
+                    LocalDateTime now = LocalDateTime.now();
+                    LocalDateTime end = auction.getEnding_at();
+
+                    Duration duration = Duration.between(now, end);
+
+                    if (duration.isNegative() || duration.isZero()) {
+                        openAuction.setTimeLeft("Tempo Scaduta");
+                    } else {
+                        long days = duration.toDays();
+                        long hours = duration.toHours() % 24;
+                        long minutes = duration.toMinutes() % 60;
+                        openAuction.setTimeLeft(days + " giorni " + hours + " ore " + minutes + " minuti");
+                    }
+
+                    openAuction.setItems(allItemsByAuction.get(auction.getAuctionId()));
+                    openAuction.setMaxOffer(maxOffersByAuction.get(auction.getAuctionId()));
+
+                    openAuctions.add(openAuction);
+                }
+            }
+        }
+        return openAuctions;
+    }
+
+    /**
+     * returns all won and closed auctions by the user
+     * @param userId
+     * @return
+     * @throws SQLException
+     */
+    public List<ClosedAuction> findAllWonAuctions(int userId) throws SQLException {
+        List<ClosedAuction> closedAuctions = new ArrayList<>();
+        ClosedAuction closedAuction;
+
+        try(PreparedStatement stmt = con.prepareStatement("SELECT * " +
+                "FROM auctions " +
+                "WHERE closed = 1 " +
+                "AND id IN (SELECT auction_id FROM results WHERE winner_id = ?) " +
+                "ORDER BY expiration DESC")){
+            stmt.setInt(1, userId);
+            try(ResultSet rs = stmt.executeQuery()){
+                List<Auction> auctions = new ArrayList<>();
+                while(rs.next()) {
+                    Auction auction = new Auction();
+                    auction.setAuctionId(rs.getInt("id"));
+                    auction.setUserId(rs.getInt("creator_id"));
+                    auction.setStartingPrice(rs.getDouble("starting_price"));
+                    auction.setMinIncrement(rs.getInt("min_increment"));
+                    auction.setEnding_at(rs.getObject("expiration", LocalDateTime.class));
+                    auction.setTitle(rs.getString("title"));
+                    auction.setCreated_at(rs.getObject("created_at", LocalDateTime.class));
+                    auction.setClosed(rs.getBoolean("closed"));
+                    auctions.add(auction);
+                }
+
+                Map<Integer, List<Item>> allItemsByAuction = allItemsByAuction(auctions);
+                Map<Integer, Result> allResultsByAuction = getResultsByAuction(auctions);
+
+                for(Auction auction : auctions){
+                    closedAuction = new ClosedAuction();
+                    closedAuction.setAuction(auction);
+                    closedAuction.setItems(allItemsByAuction.get(auction.getAuctionId()));
+                    closedAuction.setResult(allResultsByAuction.get(auction.getAuctionId()));
+                    closedAuctions.add(closedAuction);
+                }
+            }
+
+        }
+
+        return closedAuctions;
     }
 }
