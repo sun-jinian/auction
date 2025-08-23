@@ -87,7 +87,7 @@
         <h1 class="logo">Auction House</h1>
         <div class="user-info">
             <span>Welcome, <span th:text="${user.username}">Guest</span></span>
-            <a th:href="@{/login}" class="btn-logout">Logout</a>
+            <a th:href="@{/login(logout=1)}" class="btn-logout">Logout</a>
         </div>
     </div>
 </nav>

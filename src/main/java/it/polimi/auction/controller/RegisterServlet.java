@@ -2,12 +2,13 @@ package it.polimi.auction.controller;
 
 import it.polimi.auction.DBUtil;
 import it.polimi.auction.dao.UserDAO;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.WebContext;
+import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -25,6 +26,11 @@ public class RegisterServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+        WebContext context = new WebContext(
+                JakartaServletWebApplication.buildApplication(getServletContext())
+                        .buildExchange(request, response),
+                request.getLocale()
+        );
 
         // Get form parameters
         String username = request.getParameter("username").trim();
@@ -38,22 +44,15 @@ public class RegisterServlet extends HttpServlet {
             if(userDAO.createUser(username, password, firstName, lastName,address) == 1) {
                 response.sendRedirect("Login.html?registration=success");
             }else {
-                forwardError(request, response, "Registration failed");
+                context.setVariable("error", "Registration failed");
+                templateEngine.process("Register", context, response.getWriter());
             }
         } catch (SQLException e) {
-            forwardError(request, response, "Database error");
+            context.setVariable("error", "Database error");
+            templateEngine.process("Register", context, response.getWriter());
         } catch (IllegalArgumentException e){
-            forwardError(request, response, e.getMessage());
-        }
-    }
-
-    private void forwardError(HttpServletRequest request, HttpServletResponse response, String error)
-            throws IOException {
-        request.setAttribute("error", error);
-        try {
-            request.getRequestDispatcher("/error").forward(request, response);
-        } catch (ServletException e) {
-            throw new RuntimeException(e);
+            context.setVariable("error", "Invalid input");
+            templateEngine.process("Register", context, response.getWriter());
         }
     }
 }
