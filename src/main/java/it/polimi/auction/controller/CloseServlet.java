@@ -1,7 +1,6 @@
 package it.polimi.auction.controller;
 
 import it.polimi.auction.DBUtil;
-import it.polimi.auction.Util;
 import it.polimi.auction.beans.Auction;
 import it.polimi.auction.beans.Offer;
 import it.polimi.auction.beans.User;

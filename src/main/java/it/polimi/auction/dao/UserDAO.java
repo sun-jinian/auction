@@ -41,7 +41,7 @@ public class UserDAO {
         }
     }
 
-    public int login(String username, String password) throws SQLException {
+    public int checkUser(String username, String password) throws SQLException {
         ResultSet rs;
         try(PreparedStatement stmt = con.prepareStatement("SELECT password_hash FROM users WHERE username = ?")){
             stmt.setString(1, username);

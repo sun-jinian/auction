@@ -19,7 +19,6 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @WebServlet("/offer")
@@ -32,46 +31,12 @@ public class OfferServlet extends HttpServlet {
     @Override
     public void init() {
         this.templateEngine = (TemplateEngine) getServletContext().getAttribute("templateEngine");
-        // 假设 DBUtil.getConnection() 返回可复用的连接，或者你可以用连接池
         try {
             this.auctionDAO = new AuctionDAO(DBUtil.getConnection());
             this.itemDAO = new ItemDAO(DBUtil.getConnection());
         } catch (SQLException e) {
             throw new RuntimeException("Failed to initialize DAOs", e);
         }
-    }
-
-    // 通用方法：准备页面
-    private void prepareOfferPage(HttpServletRequest request, HttpServletResponse response,
-                                  User user, int auctionId, String message, String error)
-            throws SQLException, IOException {
-
-        Auction auction = auctionDAO.findById(auctionId);
-        if (auction == null) {
-            request.setAttribute("error", "Auction not found");
-        } else {
-            List<Item> items = itemDAO.findAllItemInAuction(auctionId);
-            List<Offer> offers = auctionDAO.findAllOffersByAuction(auctionId);
-            double maxOffer = auctionDAO.getMaxOfferOfAuction(auctionId);
-            if (maxOffer == 0) maxOffer = auction.getStartingPrice();
-            double minimumOffer = maxOffer + auction.getMinIncrement();
-
-            request.setAttribute("auction", auction);
-            request.setAttribute("items", items);
-            request.setAttribute("offers", offers);
-            request.setAttribute("user", user);
-            request.setAttribute("minimumOffer", minimumOffer);
-        }
-
-        if (message != null) request.setAttribute("message", message);
-        if (error != null) request.setAttribute("error", error);
-
-        WebContext context = new WebContext(
-                JakartaServletWebApplication.buildApplication(getServletContext())
-                        .buildExchange(request, response),
-                request.getLocale()
-        );
-        templateEngine.process("OFFERTA", context, response.getWriter());
     }
 
     @Override
@@ -87,8 +52,7 @@ public class OfferServlet extends HttpServlet {
         String auctionIdStr = request.getParameter("id");
         if(auctionIdStr == null){
             request.setAttribute("error", "Auction ID is missing");
-            // 可以跳转到一个错误页面或首页
-            request.getRequestDispatcher("/index").forward(request, response);
+            request.getRequestDispatcher("/offer").forward(request, response);
             return;
         }
 
@@ -97,7 +61,7 @@ public class OfferServlet extends HttpServlet {
             auctionId = Integer.parseInt(auctionIdStr);
         } catch (NumberFormatException e) {
             request.setAttribute("error", "Invalid auction ID");
-            request.getRequestDispatcher("/index").forward(request, response);
+            request.getRequestDispatcher("/offer").forward(request, response);
             return;
         }
 
@@ -122,7 +86,6 @@ public class OfferServlet extends HttpServlet {
             context.setVariable("items", items);
             context.setVariable("minimumOffer", minimumOffer);
 
-            // 从 session 获取 message 并清除
             String message = (String) session.getAttribute("message");
             if(message != null){
                 context.setVariable("message", message);
@@ -132,7 +95,7 @@ public class OfferServlet extends HttpServlet {
             templateEngine.process("OFFERTA", context, response.getWriter());
         } catch (SQLException e){
             request.setAttribute("error", "Database error");
-            request.getRequestDispatcher("/index").forward(request, response);
+            request.getRequestDispatcher("/offer").forward(request, response);
         }
     }
 
