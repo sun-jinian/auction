@@ -30,8 +30,8 @@ public class RegisterServlet extends HttpServlet {
         // Get form parameters
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        String firstName = request.getParameter("first_name");
-        String lastName = request.getParameter("last_name");
+        String firstName = request.getParameter("firstName");
+        String lastName = request.getParameter("lastName");
         String address = request.getParameter("address");
 
         try (Connection conn = DBUtil.getConnection()) {
@@ -48,19 +48,16 @@ public class RegisterServlet extends HttpServlet {
             if (result == 1) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 response.getWriter().write("{\"message\": \"Registration successful\"}");
-
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("{\"error\": \"Registration failed\"}");
-
             }
-            response.getWriter().write(gson.toJson(responseData));
         } catch (SQLException e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("{\"message\": \"Database connection error\"}");
         } catch (IllegalArgumentException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\": \"invalid input\"}");
+            response.getWriter().write("{\"error\": \"Username already exists\"}");
         }
     }
 }

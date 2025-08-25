@@ -24,7 +24,7 @@ public class UserDAO {
             checkStmt.setString(1, username);
             try (ResultSet rs = checkStmt.executeQuery()) {
                 if (rs.next()) {
-                    throw new IllegalArgumentException("Username already exists");
+                    throw new IllegalArgumentException();
                 }
             }
 

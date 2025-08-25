@@ -13,11 +13,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageAlert = document.querySelector('.message-alert');
 
     const loginForm = document.querySelector('#login_page form');
-
+    const registerForm = document.querySelector('#register_page form');
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     // can only be buyPage or sellPage
     const lastPageId = localStorage.getItem('lastPage') || 'buy_page';
     const visitedAuction = JSON.parse(localStorage.getItem("visitedAuctions")) || [];
+
+    const left = document.querySelector('.left');
+    const right = document.querySelector('.right');
+    const sellButton = document.getElementById('sell-container');
+    const buyButton = document.getElementById('buy-container');
+    const logoutButton = document.getElementById('logout-container');
+    const username = document.getElementById('user-username');
+    const goToSellPage = () => showPage('sellPage', 0);
+    const goToBuyPage = () => showPage('buyPage', 0);
+
+    const historySpan = document.getElementById('history-no-result-span');
+    const historyDiv = document.getElementById('history-div');
+    const historyTable = document.getElementById("history-table");
+    const wonSpan = document.getElementById('won-no-result-span');
+    const wonTable = document.getElementById("won-auctions-table");
+    const noResultSpan = document.getElementById('no-result-span-buy');
+    const searchResultsDiv = document.getElementById('search-results-div-buy');
+    const resultsTable = document.getElementById("search-results-table-buy");
+
+    const openTable = document.getElementById('open-auctions-body');
+    const closedTable = document.getElementById('closed-auctions-body');
+    const itemTable = document.getElementById("item-available-table");
+
+
     let last_username = 'test';
     console.log(visitedAuction);
 
@@ -76,30 +100,21 @@ document.addEventListener('DOMContentLoaded', function() {
         [loginPage, registerPage, buyPage, sellPage, offerPage, detailPage].forEach(p => {
             if (p) p.style.display = 'none';
         });
-        const sellButton = document.getElementById('sell-container');
-        const buyButton = document.getElementById('buy-container');
-        const logoutButton = document.getElementById('logout-container');
-        const username = document.getElementById('user-username');
-        const goToSellPage = () => showPage(sellPage, 0);
-        const goToBuyPage = () => showPage(buyPage, 0);
+
         if(page !== loginPage && page!== registerPage){
             sellButton.addEventListener('click', goToSellPage);
             buyButton.addEventListener('click', goToBuyPage);
             logoutButton.addEventListener('click', logout);
-            logoutButton.style.display = 'block';
-            sellButton.style.display = 'block';
-            buyButton.style.display = 'block';
-            username.style.display = 'block';
+            left.style.display = 'block';
+            right.style.display = 'block';
             username.textContent = last_username;
         }else{
             sellButton.removeEventListener('click', goToSellPage);
             buyButton.removeEventListener('click', goToBuyPage);
             logoutButton.removeEventListener('click', logout);
-
-            logoutButton.style.display = 'none';
-            sellButton.style.display = "none";
-            buyButton.style.display = "none";
-            username.style.display = 'none';
+            left.style.display = 'none';
+            right.style.display = 'none';
+            username.textContent = '';
         }
 
         async function logout() {
@@ -114,9 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showError('Logout failed');
             }
         }
-
-        // display the given page
-        if (page) page.style.display = 'block';
 
         function formatDate(rawDate){
             const date = new Date(rawDate);
@@ -133,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
          */
         async function getBuyPageInfo(){
             try {
+                buyPage.style.display = 'block';
                 //renew history, filter out expired records
                 let visited = JSON.parse(localStorage.getItem("visitedAuctions")) || [];
                 let renewed_visited = visited.filter(entry => Date.now() - entry.timestamp < EXPIRATION_TIME);
@@ -147,14 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const data = await response.json();
                 const {openAuctions, wonAuctions, historyAuctions} = data;
-                const historySpan = document.getElementById('history-no-result-span');
-                const historyDiv = document.getElementById('history-div');
-                const historyTable = document.getElementById("history-table");
-                const wonSpan = document.getElementById('won-no-result-span');
-                const wonTable = document.getElementById("won-auctions-table");
-                const noResultSpan = document.getElementById('no-result-span-buy');
-                const searchResultsDiv = document.getElementById('search-results-div-buy');
-                const resultsTable = document.getElementById("search-results-table-buy");
+
                 historySpan.innerHTML = '';
                 historyDiv.innerHTML = '';
                 historyTable.innerHTML = '';
@@ -356,6 +362,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async function getSellPageInfo() {
             try {
+                sellPage.style.display = 'block';
                 const response = await fetch('sell');
                 if (!response.ok){
                     showError('Failed to load auctions');
@@ -364,9 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const data = await response.json();
                 const { openAuctions, closedAuctions, items } = data;
-                const openTable = document.getElementById('open-auctions-body');
-                const closedTable = document.getElementById('closed-auctions-body');
-                const itemTable = document.getElementById("item-available-table");
+
                 openTable.innerHTML = '';
                 closedTable.innerHTML = '';
                 itemTable.innerHTML = '';
@@ -560,6 +565,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async function getDetailPageInfo(auctionId) {
             try {
+                detailPage.style.display = 'block';
                 const response = await fetch(`auction?auctionId=${encodeURIComponent(auctionId)}`);
                 if (!response.ok){
                     showError('Failed to load auction detail');
@@ -630,6 +636,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         async function getOfferPageInfo(auctionId){
             try {
+                offerPage.style.display = 'block';
                 const response = await fetch(`offer?auctionId=${encodeURIComponent(auctionId)}`);
                 if (!response.ok){
                     showError('Failed to load auction detail');
@@ -730,6 +737,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+
         if(page === 'buyPage'){
             getBuyPageInfo()
         }else if(page === 'sellPage'){
@@ -825,26 +833,45 @@ document.addEventListener('DOMContentLoaded', function() {
             showError('Address must be between 1 and 255 characters');
             return false;
         }
+        return true;
     }
 
-    const registerForm = document.getElementById('registration-form');
+    const showRegisterLink = document.getElementById('register-link');
+    if (showRegisterLink) {
+        showRegisterLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            loginForm.reset();
+            showPage(registerPage, 0);
+        });
+    }
+
+    const loginLink = document.querySelector('.login-link a');
+    if (loginLink) {
+        loginLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            registerForm.reset();
+            showPage(loginPage, 0);
+        });
+    }
+
     if (registerForm) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const username = document.getElementById('username_register').value;
+            const username = document.getElementById('username_register').value.trim();
             const password = document.getElementById('password_register').value;
             const firstName = document.getElementById('first-name').value;
             const lastName = document.getElementById('last-name').value;
             const address = document.getElementById('address').value;
 
+            console.log('Registration attempt with:', {
+                username, password, firstName, lastName, address
+            });
+
             if (!verifyInputs(username, password, firstName, lastName, address)) {
                 return;
             }
 
-            console.log('Registration attempt with:', {
-                username, password, firstName, lastName, address
-            });
 
             const urlParams = new URLSearchParams();
             urlParams.append('username', username);
@@ -869,32 +896,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     return response.json();
                 })
                 .then(data => {
-                     console.log('Registration successful:', data);
-                     showMessage(data.message);
-                     showPage(loginPage, 0)
-                 })
+                    console.log('Registration successful:', data);
+                    showMessage(data.message);
+                    showPage(loginPage, 0)
+                })
                 .catch(error => {
                     console.error('operation failed.:', error.message);
                     showError(error.message);
-                 });
-        });
-    }
-
-    const showRegisterLink = document.getElementById('register-link');
-    if (showRegisterLink) {
-        showRegisterLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            loginForm.reset();
-            showPage(registerPage, 0);
-        });
-    }
-
-    const loginLink = document.querySelector('.login-link a');
-    if (loginLink) {
-        loginLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            registerForm.reset();
-            showPage(loginPage, 0);
+                });
         });
     }
 
