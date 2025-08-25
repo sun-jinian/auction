@@ -36,29 +36,25 @@ public class UserDAO {
 
             // if affected row count is 1, user was inserted successfully
             return insertStmt.executeUpdate();
-        }catch (SQLException e){
-            throw new SQLException(e);
         }
     }
 
     public int checkUser(String username, String password) throws SQLException {
-        ResultSet rs;
         try(PreparedStatement stmt = con.prepareStatement("SELECT password_hash FROM users WHERE username = ?")){
             stmt.setString(1, username);
-            rs = stmt.executeQuery();
-            if(rs.next()){
-                String storedPassword = rs.getString("password_hash");
+            try(ResultSet rs = stmt.executeQuery()){
+                if(rs.next()){
+                    String storedPassword = rs.getString("password_hash");
 
-                if (password.equals(storedPassword)) {
-                    return 1;
+                    if (password.equals(storedPassword)) {
+                        return 1;
+                    } else {
+                        return 0;
+                        }
                 } else {
-                    return 0;
-                    }
-            } else {
-                return 3;
+                    return 3;
                 }
-        } catch (Exception e) {
-            throw new SQLException(e);
+            }
         }
     }
 

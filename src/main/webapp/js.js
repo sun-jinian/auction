@@ -82,7 +82,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const username = document.getElementById('user-username');
         const goToSellPage = () => showPage(sellPage, 0);
         const goToBuyPage = () => showPage(buyPage, 0);
-        const pageElement = document.getElementById(pageId);
         if(page !== loginPage && page!== registerPage){
             sellButton.addEventListener('click', goToSellPage);
             buyButton.addEventListener('click', goToBuyPage);
@@ -747,7 +746,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * @type {Element}
      */
     if (loginForm) {
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const username = document.getElementById('username').value;
@@ -830,7 +829,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const registerForm = document.getElementById('registration-form');
     if (registerForm) {
-        registerForm.addEventListener('submit', function(e) {
+        registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const username = document.getElementById('username_register').value;
@@ -903,7 +902,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * initiate the event listeners for the sell page
      */
     if (sellPage) {
-        const uploadItemForm = sellPage.getElementById('create-item-form');
+        const uploadItemForm = document.getElementById('create-item-form');
         if (uploadItemForm) {
             uploadItemForm.addEventListener('submit', async function(e) {
                 e.preventDefault();

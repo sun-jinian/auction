@@ -31,21 +31,19 @@ public class ItemDAO {
 
     public List<Item> findAllItemInAuction(int auction_id) throws SQLException {
         List<Item> items = new ArrayList<>();
-        ResultSet rs = null;
         try (PreparedStatement stmt = con.prepareStatement("SELECT * FROM items WHERE id IN (SELECT item_id FROM auction_items WHERE auction_id = ?) ")){
             stmt.setInt(1, auction_id);
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                Item item = new Item();
-                item.setId(rs.getInt("id"));
-                item.setTitle(rs.getString("name"));
-                item.setDescription(rs.getString("description"));
-                item.setCover_image(rs.getString("cover_image"));
-                item.setPrice(rs.getDouble("price"));
-                items.add(item);
+            try(ResultSet rs = stmt.executeQuery()){
+                while (rs.next()) {
+                    Item item = new Item();
+                    item.setId(rs.getInt("id"));
+                    item.setTitle(rs.getString("name"));
+                    item.setDescription(rs.getString("description"));
+                    item.setCover_image(rs.getString("cover_image"));
+                    item.setPrice(rs.getDouble("price"));
+                    items.add(item);
+                }
             }
-        }catch (SQLException e){
-            throw new SQLException(e);
         }
         return items;
     }
@@ -58,25 +56,18 @@ public class ItemDAO {
      */
     public List<Item> findAllItemNotInAuction(int userId) throws SQLException {
         List<Item> items = new ArrayList<>();
-        ResultSet rs = null;
         try (PreparedStatement stmt = con.prepareStatement("SELECT * FROM items WHERE id NOT IN (SELECT item_id FROM auction_items) AND created_by =? ORDER BY name ")){
             stmt.setInt(1, userId);
-            rs = stmt.executeQuery();
-            while (rs.next()) {
-                Item item = new Item();
-                item.setId(rs.getInt("id"));
-                item.setTitle(rs.getString("name"));
-                item.setDescription(rs.getString("description"));
-                item.setCover_image(rs.getString("cover_image"));
-                item.setPrice(rs.getDouble("price"));
-                items.add(item);
-            }
-        } catch (SQLException e) {
-            throw new SQLException(e);
-        }finally {
-            try {
-                if (rs != null) rs.close();
-            } catch (Exception ignore) {
+            try(ResultSet rs = stmt.executeQuery()){
+                while (rs.next()) {
+                    Item item = new Item();
+                    item.setId(rs.getInt("id"));
+                    item.setTitle(rs.getString("name"));
+                    item.setDescription(rs.getString("description"));
+                    item.setCover_image(rs.getString("cover_image"));
+                    item.setPrice(rs.getDouble("price"));
+                    items.add(item);
+                }
             }
         }
         return items;
@@ -92,8 +83,6 @@ public class ItemDAO {
         try(PreparedStatement stmt = con.prepareStatement("UPDATE items SET sold = 1 WHERE id IN (SELECT item_id FROM auction_items WHERE auction_id = ?)")){
             stmt.setInt(1, auction_id);
             return stmt.executeUpdate();
-        }catch (SQLException e) {
-            throw new SQLException(e);
         }
     }
 
@@ -106,12 +95,11 @@ public class ItemDAO {
                 stmt.setInt(i + 1, itemIds[i]);
             }
 
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getDouble("total_price");
+            try(ResultSet rs = stmt.executeQuery()){
+                if (rs.next()) {
+                    return rs.getDouble("total_price");
+                }
             }
-        } catch (SQLException e) {
-            throw new SQLException(e);
         }
         return -1.0;
     }
