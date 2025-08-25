@@ -49,13 +49,13 @@ public class BuyServlet extends HttpServlet {
 
                 int user_id = user.getId();
                 String keywords = request.getParameter("keywords");
-                String[] visitedAuctions = request.getParameterValues("visitedAuctions");
+                String[] visitedAuctions = request.getParameterValues("auctionId");
 
                 if(visitedAuctions!= null && visitedAuctions.length > 0){
                     historyAuctions = auctionDAO.find_open_historical_auctions(visitedAuctions);
                 }
 
-                if (keywords != null && !keywords.trim().isEmpty()) {
+                if (keywords != null && !keywords.trim().isBlank()) {
                     // split keywords by space and add them to a list
                     String[] parts = keywords.trim().split("\\s+");
                     openAuctions = auctionDAO.findAllOpenAuctionByKeywords(parts);
@@ -67,6 +67,7 @@ public class BuyServlet extends HttpServlet {
                 responseData.put("openAuctions", openAuctions);
                 responseData.put("wonAuctions", wonAuctions);
                 responseData.put("historyAuctions", historyAuctions);
+
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write(gson.toJson(responseData));
 

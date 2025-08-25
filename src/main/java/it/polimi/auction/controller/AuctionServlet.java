@@ -3,6 +3,7 @@ package it.polimi.auction.controller;
 import com.google.gson.Gson;
 import it.polimi.auction.DBUtil;
 import it.polimi.auction.beans.Auction;
+import it.polimi.auction.beans.Item;
 import it.polimi.auction.beans.Offer;
 import it.polimi.auction.beans.User;
 import it.polimi.auction.dao.AuctionDAO;
@@ -58,13 +59,15 @@ public class AuctionServlet extends HttpServlet {
                 AuctionDAO auctionDAO = new AuctionDAO(DBUtil.getConnection());
                 Auction auction = auctionDAO.findById(auction_id);
                 List<Offer> offers = auctionDAO.findAllOffersByAuction(auction_id);
-
+                ItemDAO itemDAO = new ItemDAO(DBUtil.getConnection());
+                List<Item> items = itemDAO.findAllItemInAuction(auction_id);
 
                 boolean trulyCloseable = auction.getEnding_at().isBefore(LocalDateTime.now()) && !auction.isClosed();
                 Map<String, Object> responseData = new HashMap<>();
                 responseData.put("auction", auction);
                 responseData.put("offers", offers);
-                responseData.put("trulyCloseable", trulyCloseable);
+                responseData.put("closeable", trulyCloseable);
+                responseData.put("items", items);
                 response.setStatus(HttpServletResponse.SC_OK);
                 response.getWriter().write(gson.toJson(responseData));
 

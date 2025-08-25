@@ -91,7 +91,9 @@ button {
 .auction-list, table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: auto;
 }
+
 .auction-list th,
 .auction-list td,
 table th,
@@ -100,7 +102,9 @@ table td {
     border: 1px solid #ddd;
     vertical-align: top;
     word-break: break-word;
+    overflow-wrap: break-word;
 }
+
 table th {
     background-color: #f2f2f2;
 }

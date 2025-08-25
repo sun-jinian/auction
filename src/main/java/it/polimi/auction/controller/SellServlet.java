@@ -14,6 +14,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -34,8 +35,9 @@ public class SellServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("application/json");
+        response.setContentType("application/json; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
+        response.setHeader("Access-Control-Allow-Origin", "*");
 
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
@@ -59,8 +61,15 @@ public class SellServlet extends HttpServlet {
                 responseData.put("closedAuctions", closedAuctions);
                 responseData.put("itemsAvailable", notInAuctionItems);
 
+                // 重置缓冲区并设置成功状态
+                response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(new Gson().toJson(responseData));
+
+                // 使用try-with-resources确保writer正确关闭
+                try (PrintWriter out = response.getWriter()) {
+                    out.print(gson.toJson(responseData));
+                    out.flush();
+                }
 
             } catch (SQLException e) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

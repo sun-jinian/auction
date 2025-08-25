@@ -2,6 +2,8 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // get all the elements we need
+
+
     const loginPage = document.getElementById('login_page');
     const registerPage = document.getElementById('register_page');
     const buyPage = document.getElementById('buy_page');
@@ -14,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const loginForm = document.querySelector('#login_page form');
     const registerForm = document.querySelector('#register_page form');
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     // can only be buyPage or sellPage
     const lastPageId = localStorage.getItem('lastPage') || 'buy_page';
     const visitedAuction = JSON.parse(localStorage.getItem("visitedAuctions")) || [];
@@ -25,21 +26,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const buyButton = document.getElementById('buy-container');
     const logoutButton = document.getElementById('logout-container');
     const username = document.getElementById('user-username');
-    const goToSellPage = () => showPage('sellPage', 0);
-    const goToBuyPage = () => showPage('buyPage', 0);
+    const goToSellPage = () => showPage(sellPage, 0);
+    const goToBuyPage = () => showPage(buyPage, 0);
 
     const historySpan = document.getElementById('history-no-result-span');
-    const historyDiv = document.getElementById('history-div');
     const historyTable = document.getElementById("history-table");
     const wonSpan = document.getElementById('won-no-result-span');
     const wonTable = document.getElementById("won-auctions-table");
     const noResultSpan = document.getElementById('no-result-span-buy');
-    const searchResultsDiv = document.getElementById('search-results-div-buy');
     const resultsTable = document.getElementById("search-results-table-buy");
 
     const openTable = document.getElementById('open-auctions-body');
     const closedTable = document.getElementById('closed-auctions-body');
-    const itemTable = document.getElementById("item-available-table");
+    const itemTableAvailable = document.getElementById("item-available-table");
+
+    const offerForm = document.getElementById('offer-form');
+    const offerInput = offerForm.querySelector('input');
+    const itemTable = document.getElementById('offer-page-items');
+
+    const itemTable_detail = document.getElementById('detail-page-items');
+
+    const endDateInput = document.getElementById('endDate');
+    const now = new Date();
+
+
+    const offerTable_offer = offerPage.querySelector('.offers-table tbody');
+    const detail_offer = offerPage.querySelector('.auction-details');
+    const spans_offer = detail_offer.querySelectorAll('span')
+
+    const offerTable = document.getElementById('offers-table');
+    const detail = document.getElementById('auction-details');
+    const spans_detail = detail.querySelectorAll('span')
+
+
+    const closeBtn = document.getElementById('closeBtn');
+    const closeBtnInput = closeBtn.querySelector('button');
+
+    const loginLink = document.querySelector('.login-link a');
+    const showRegisterLink = document.getElementById('register-link');
+
+    const searchForm = document.getElementById(`keywords-form`);
+    const uploadItemForm = document.getElementById('create-item-form');
+    const createAuctionForm = document.getElementById('create-auction-form');
+
+    const closeAuctionForm = document.getElementById('close-form');
 
 
     let last_username = 'test';
@@ -47,26 +77,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const lastPage = document.getElementById(lastPageId);
 
-    if (isLoggedIn) {
-        showPage(lastPage, 0);
-    }
-
     // 30 days in milliseconds
     const EXPIRATION_TIME = 30 * 24 * 60 * 60 * 1000;
 
     function saveHistory(auctionId) {
-        const now = Date.now();
+        const now_save = Date.now();
 
         let visited = JSON.parse(localStorage.getItem("visitedAuctions")) || [];
 
         // filter out expired records
-        visited = visited.filter(entry => now - entry.timestamp < EXPIRATION_TIME);
+        visited = visited.filter(entry => now_save - entry.timestamp < EXPIRATION_TIME);
 
         // if exists, remove old record
         visited = visited.filter(entry => entry.id !== auctionId);
 
         // insert new record at the beginning
-        visited.unshift({ id: auctionId, timestamp: now });
+        visited.unshift({ id: auctionId, timestamp: now_save });
 
         // save new visited auctions
         localStorage.setItem("visitedAuctions", JSON.stringify(visited));
@@ -76,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showError(message) {
         errorAlert.querySelector('p').textContent = message;
         errorAlert.style.display = 'block';
+        window.scrollTo(0, 0);
         setTimeout(() => {
             errorAlert.style.display = 'none';
         }, 5000);
@@ -90,13 +117,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 
+    async function logout() {
+        const response = await fetch('login?logout=1');
+        if (response.ok) {
+            localStorage.clear();
+            showMessage('Logout successful, all history cleared');
+            showPage(loginPage, 0);
+        } else {
+            console.error("Logout failed:", response.status);
+            showError('Logout failed');
+        }
+    }
+
     /**
      * changes the current page to the given page
      * @param page
      * @param auctionId
      */
     function showPage(page, auctionId) {
-        // hide all other pages
+        logoutButton.removeEventListener('click', logout);
+        // hide all pages
         [loginPage, registerPage, buyPage, sellPage, offerPage, detailPage].forEach(p => {
             if (p) p.style.display = 'none';
         });
@@ -111,33 +151,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }else{
             sellButton.removeEventListener('click', goToSellPage);
             buyButton.removeEventListener('click', goToBuyPage);
-            logoutButton.removeEventListener('click', logout);
+
             left.style.display = 'none';
             right.style.display = 'none';
             username.textContent = '';
         }
 
-        async function logout() {
-            let response = await fetch('login?logout=1');
-            if (response.ok) {
-                localStorage.setItem('isLoggedIn', 'false');
-                localStorage.removeItem('lastPage');
-                localStorage.removeItem('visitedAuctions');
-                showPage(loginPage, 0);
-            } else {
-                console.error("Logout failed:", response.status);
-                showError('Logout failed');
-            }
-        }
-
-        function formatDate(rawDate){
-            const date = new Date(rawDate);
+        function formatDate(rawDateObj) {
+            const d = rawDateObj.date;
+            const t = rawDateObj.time;
+            const date = new Date(d.year, d.month-1, d.day, t.hour, t.minute, t.second);
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
-            return `${year}-${month}-${day}T${hours}:${minutes}`;
+            return `${day}-${month}-${year} ${hours}:${minutes}`;
         }
         /**
          * get all visited auctions and won auctions
@@ -149,32 +178,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 //renew history, filter out expired records
                 let visited = JSON.parse(localStorage.getItem("visitedAuctions")) || [];
                 let renewed_visited = visited.filter(entry => Date.now() - entry.timestamp < EXPIRATION_TIME);
-                localStorage.setItem("visitedAuctions", JSON.stringify(visited));
+                localStorage.setItem("visitedAuctions", JSON.stringify(renewed_visited));
 
-                const visitedAuctions = renewed_visited.map(auctionId => `auctionId=${auctionId}`).join('&');
-                const response = await fetch(`buy?${visitedAuctions}`);
-                if (!response.ok) {
-                    showError('Failed to load auctions');
-                    return;
-                }
+                const visitedAuctions = renewed_visited.map(entry =>
+                    `auctionId=${entry.id}`).join('&');
+                const response = await fetch(`buy?${visitedAuctions}`).then(response => {
+                    if (response.status === 401) {
+                        showError('session timed out, please login again');
+                        showPage(loginPage, 0);
+                        logout();
+                        return;
+                    }else if(!response.ok) {
+                        showError('Failed to load auction detail');
+                        return;
+                    }
+                    return response;
+                });
 
                 const data = await response.json();
                 const {openAuctions, wonAuctions, historyAuctions} = data;
 
                 historySpan.innerHTML = '';
-                historyDiv.innerHTML = '';
                 historyTable.innerHTML = '';
                 wonSpan.innerHTML = '';
                 wonTable.innerHTML = '';
-                noResultSpan.innerHTML = '';
-                searchResultsDiv.innerHTML = '';
                 resultsTable.innerHTML = '';
 
+                noResultSpan.style.display = 'block';
+
                 if (openAuctions.length > 0) {
-                    noResultSpan.style.display = 'none';
-                    searchResultsDiv.style.display = 'block';
                     openAuctions.forEach(openAuction => {
                         const tr = document.createElement('tr');
+
                         const tdId = document.createElement('td');
                         const a = document.createElement('a');
                         a.href = `#`;
@@ -192,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         openAuction.items.forEach(item => {
                             const div = document.createElement('div');
                             const img = document.createElement('img');
-                            img.src = item.cover_image;
+                            img.src = '/auction_war/' + item.cover_image;
                             img.alt = 'Item image';
                             img.style.width = '30px';
                             img.style.height = '30px';
@@ -217,72 +252,54 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 } else {
                     noResultSpan.style.display = 'block';
-                    searchResultsDiv.style.display = 'none';
                 }
 
                 if (wonAuctions.length > 0) {
                     wonSpan.style.display = 'none';
                     wonAuctions.forEach(wonAuction => {
-                        const tr = document.createElement('tr');
-
-                        // Auction ID
-                        const tdId = document.createElement('td');
-                        tdId.textContent = wonAuction.auction.auctionId;
-                        tr.appendChild(tdId);
-
-                        // Item IDs
-                        const tdItemIds = document.createElement('td');
                         wonAuction.items.forEach(item => {
-                            const span = document.createElement('span');
-                            span.textContent = item.id;
-                            tdItemIds.appendChild(span);
-                            tdItemIds.appendChild(document.createElement('br'));
-                        });
-                        tr.appendChild(tdItemIds);
+                            const tr = document.createElement('tr');
 
-                        // Item images + titles
-                        const tdItems = document.createElement('td');
-                        wonAuction.items.forEach(item => {
+                            // Auction ID
+                            const tdId = document.createElement('td');
+                            tdId.textContent = wonAuction.auction.auctionId;
+                            tr.appendChild(tdId);
+
+                            const tdItemId = document.createElement('td');
+                            tdItemId.textContent = item.id;
+                            tr.appendChild(tdItemId);
+
+                            // Item images + titles
+                            const tdItems = document.createElement('td');
                             const div = document.createElement('div');
-
                             const img = document.createElement('img');
-                            img.src = item.cover_image;
+                            img.src = '/auction_war/' + item.cover_image;
                             img.alt = 'Item image';
                             img.style.width = '30px';
                             img.style.height = '30px';
                             img.style.marginLeft = '5px';
 
-                            const span = document.createElement('span');
+                            let span = document.createElement('span');
                             span.textContent = item.title;
 
                             div.appendChild(img);
                             div.appendChild(span);
 
                             tdItems.appendChild(div);
-                        });
-                        tr.appendChild(tdItems);
+                            tr.appendChild(tdItems);
 
-                        // Item descriptions
-                        const tdDescriptions = document.createElement('td');
-                        wonAuction.items.forEach(item => {
-                            const span = document.createElement('span');
-                            span.textContent = item.description;
-                            tdDescriptions.appendChild(span);
-                            tdDescriptions.appendChild(document.createElement('br'));
-                        });
-                        tr.appendChild(tdDescriptions);
 
-                        // Item prices
-                        const tdPrices = document.createElement('td');
-                        wonAuction.items.forEach(item => {
-                            const span = document.createElement('span');
-                            span.textContent = item.price;
-                            tdPrices.appendChild(span);
-                            tdPrices.appendChild(document.createElement('br'));
-                        });
-                        tr.appendChild(tdPrices);
+                            const tdDescriptions = document.createElement('td');
+                            tdDescriptions.textContent = item.description;
+                            tr.appendChild(tdDescriptions);
 
-                        wonTable.appendChild(tr);
+                            // Item prices
+                            const tdPrices = document.createElement('td');
+                            tdPrices.textContent = item.price;
+                            tr.appendChild(tdPrices);
+
+                            wonTable.appendChild(tr);
+                        });
                     });
                 } else {
                     wonSpan.style.display = 'block';
@@ -295,26 +312,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Auction ID
                         const tdId = document.createElement('td');
-                        tdId.textContent = historyAuction.auction.auctionId;
-                        tr.appendChild(tdId);
-
-                        // Item IDs
-                        const tdItemIds = document.createElement('td');
-                        historyAuction.items.forEach(item => {
-                            const span = document.createElement('span');
-                            span.textContent = item.id;
-                            tdItemIds.appendChild(span);
-                            tdItemIds.appendChild(document.createElement('br'));
+                        const a = document.createElement('a');
+                        a.href = `#`;
+                        a.textContent = historyAuction.auction.auctionId;
+                        a.dataset.id = historyAuction.auction.auctionId;
+                        a.addEventListener('click', () => {
+                            showPage(offerPage, a.dataset.id);
                         });
-                        tr.appendChild(tdItemIds);
+
+                        tdId.appendChild(a);
+                        tr.appendChild(tdId);
 
                         // Item images + titles
                         const tdItems = document.createElement('td');
                         historyAuction.items.forEach(item => {
                             const div = document.createElement('div');
-
                             const img = document.createElement('img');
-                            img.src = item.cover_image;
+
+                            img.src = '/auction_war/' + item.cover_image;
                             img.alt = 'Item image';
                             img.style.width = '30px';
                             img.style.height = '30px';
@@ -330,31 +345,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         tr.appendChild(tdItems);
 
-                        // Item descriptions
-                        const tdDescriptions = document.createElement('td');
-                        historyAuction.items.forEach(item => {
-                            const span = document.createElement('span');
-                            span.textContent = item.description;
-                            tdDescriptions.appendChild(span);
-                            tdDescriptions.appendChild(document.createElement('br'));
-                        });
-                        tr.appendChild(tdDescriptions);
+                        const tdMax = document.createElement('td');
+                        tdMax.textContent = historyAuction.maxOffer;
+                        tr.appendChild(tdMax);
 
-                        // Item prices
-                        const tdPrices = document.createElement('td');
-                        historyAuction.items.forEach(item => {
-                            const span = document.createElement('span');
-                            span.textContent = item.price;
-                            tdPrices.appendChild(span);
-                            tdPrices.appendChild(document.createElement('br'));
-                        });
-                        tr.appendChild(tdPrices);
+                        const tdTime = document.createElement('td');
+                        tdTime.textContent = historyAuction.timeLeft;
+                        tr.appendChild(tdTime);
 
                         historyTable.appendChild(tr);
                     });
                 } else {
                     historySpan.style.display = 'block';
                 }
+                localStorage.setItem('lastPage', 'buy_page');
             } catch (error) {
                 console.error('Failed to load auctions:', error);
             }
@@ -363,18 +367,25 @@ document.addEventListener('DOMContentLoaded', function() {
         async function getSellPageInfo() {
             try {
                 sellPage.style.display = 'block';
-                const response = await fetch('sell');
-                if (!response.ok){
-                    showError('Failed to load auctions');
-                    return;
-                }
+                const response = await fetch('sell').then(response => {
+                    if (response.status === 401) {
+                        showError('session timed out, please login again');
+                        showPage(loginPage, 0);
+                        logout();
+                        return;
+                    }else if(!response.ok) {
+                        showError('Failed to load auction detail');
+                        return;
+                    }
+                    return response;
+                });
 
                 const data = await response.json();
-                const { openAuctions, closedAuctions, items } = data;
+                const { openAuctions, closedAuctions, itemsAvailable } = data;
 
                 openTable.innerHTML = '';
                 closedTable.innerHTML = '';
-                itemTable.innerHTML = '';
+                itemTableAvailable.innerHTML = '';
 
                 openAuctions.forEach(openAuction => {
                     const tr = document.createElement('tr');
@@ -395,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     openAuction.items.forEach(item => {
                         const div = document.createElement('div');
                         const img = document.createElement('img');
-                        img.src = item.cover_image;
+                        img.src = '/auction_war/' + item.cover_image;
                         img.alt = 'Item image';
                         img.style.width = '30px';
                         img.style.height = '30px';
@@ -440,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const div = document.createElement('div');
                         div.style.whiteSpace = 'nowrap';
                         const img = document.createElement('img');
-                        img.src = item.cover_image;
+                        img.src = '/auction_war/' + item.cover_image;
                         img.alt = 'Item image';
                         img.style.width = '30px';
                         img.style.height = '30px';
@@ -455,7 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // ending_at
                     const tdEnding = document.createElement('td');
-                    tdEnding.textContent = new Date(closedAuction.auction.ending_at).toLocaleString();
+                    tdEnding.textContent = formatDate(closedAuction.auction.ending_at);
                     tr.appendChild(tdEnding);
 
                     // startingPrice
@@ -475,7 +486,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // created_at
                     const tdCreated = document.createElement('td');
-                    tdCreated.textContent = new Date(closedAuction.auction.created_at).toLocaleString();
+                    tdCreated.textContent = formatDate(closedAuction.auction.created_at);
                     tr.appendChild(tdCreated);
 
                     // winner_name
@@ -497,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
 
-                items.forEach(item => {
+                itemsAvailable.forEach(item => {
                     const tr = document.createElement('tr');
                     const tdBox = document.createElement('td');
                     const label = document.createElement('label');
@@ -517,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const tdItem = document.createElement('td');
                     const img = document.createElement('img');
-                    img.src = item.cover_image;
+                    img.src = '/auction_war/' + item.cover_image;
                     img.alt = 'cover';
                     img.className = 'cover'
                     img.style.width = '50px';
@@ -544,11 +555,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     const tdDescription = document.createElement('td');
                     tdDescription.textContent = item.description;
                     tr.appendChild(tdDescription);
-                    itemTable.appendChild(tr);
+                    itemTableAvailable.appendChild(tr);
                 });
 
-                const endDateInput = document.getElementById('endDate');
-                const now = new Date();
 
                 const year = now.getFullYear();
                 const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -557,6 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const minutes = String(now.getMinutes()).padStart(2, '0');
 
                 endDateInput.min = `${year}-${month}-${day}T${hours}:${minutes}`;
+                localStorage.setItem('lastPage', 'buy_page');
 
             } catch (error) {
                 console.error('Failed to load auctions:', error);
@@ -566,29 +576,35 @@ document.addEventListener('DOMContentLoaded', function() {
         async function getDetailPageInfo(auctionId) {
             try {
                 detailPage.style.display = 'block';
-                const response = await fetch(`auction?auctionId=${encodeURIComponent(auctionId)}`);
-                if (!response.ok){
-                    showError('Failed to load auction detail');
-                    return;
-                }
-                const offerTable = document.getElementById('offers-table');
-                const detail = document.getElementById('auction-details');
-                detail.innerHTML = '';
+                const response = await fetch(`auction?auctionId=${encodeURIComponent(auctionId)}`).then(response => {
+                    if (response.status === 401) {
+                        showError('session timed out, please login again');
+                        showPage(loginPage, 0);
+                        logout();
+                        return;
+                    }else if(!response.ok) {
+                        showError('Failed to load auction detail');
+                        return;
+                    }
+                    return response;
+                });
+
+                itemTable_detail.innerHTML = '';
                 offerTable.innerHTML = '';
 
                 const data = await response.json();
-                const { auction, offers, closeable  } = data;
-                const spans = detail.querySelectorAll('span')
+                const { auction, offers, closeable, items } = data;
                 const status = auction.closed?'Chiusa':'Aperta';
                 const formatted = formatDate(auction.ending_at);
                 const contents = [auction.auctionId,
                     auction.title, auction.startingPrice,
                     auction.minIncrement, formatted,
                     status]
-                spans.forEach((span, index) => {span.textContent = contents[index] || "";})
+                spans_detail.forEach((span, index) => {span.textContent = contents[index] || "";})
 
                 offers.forEach(offer => {
                     const tr = document.createElement('tr');
+                    tr.className = 'col-articoli';
                     const tdId = document.createElement('td');
                     tdId.textContent = offer.id;
                     tr.appendChild(tdId);
@@ -620,14 +636,46 @@ document.addEventListener('DOMContentLoaded', function() {
                     offerTable.appendChild(tr);
                 }
 
-                const closeBtn = document.getElementById('closeBtn');
-                const closeBtnInput = closeBtn.querySelector('input');
+
                 closeBtnInput.value = auction.auctionId;
-                if(closeable){
-                    closeBtn.style.display = 'block';
-                }else{
-                    closeBtn.style.display = 'none';
-                }
+                closeBtn.style.display = closeable ? 'block' : 'none';
+                localStorage.setItem('lastPage', 'buy_page');
+
+
+                items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'col-articoli';
+
+                    // tdId
+                    const tdId = document.createElement('td');
+                    tdId.textContent = item.id;
+                    tr.appendChild(tdId);
+
+                    const tdImg = document.createElement('td');
+                    const img = document.createElement('img');
+                    const spanTitle = document.createElement('span');
+                    img.src = '/auction_war/' + item.cover_image;
+                    img.alt = 'cover';
+                    img.className = 'cover'
+                    img.style.width = '50px';
+                    img.style.height = 'auto';
+                    spanTitle.textContent = item.title;
+                    tdImg.appendChild(img);
+                    tdImg.appendChild(spanTitle);
+                    tr.appendChild(tdImg);
+
+                    // description
+                    const tdDescription = document.createElement('td');
+                    tdDescription.textContent = item.description;
+                    tr.appendChild(tdDescription);
+
+                    // tdPrice
+                    const tdPrice = document.createElement('td');
+                    tdPrice.textContent = item.price;
+                    tr.appendChild(tdPrice);
+
+                    itemTable_detail.appendChild(tr);
+                });
 
             } catch (error) {
                 console.error('Failed to load auctions:', error);
@@ -637,27 +685,30 @@ document.addEventListener('DOMContentLoaded', function() {
         async function getOfferPageInfo(auctionId){
             try {
                 offerPage.style.display = 'block';
-                const response = await fetch(`offer?auctionId=${encodeURIComponent(auctionId)}`);
-                if (!response.ok){
-                    showError('Failed to load auction detail');
-                    return;
-                }
-                const offerTable = offerPage.querySelector('#offers-table tbody');
-                const detail = offerPage.querySelector('.auction-details');
-                detail.innerHTML = '';
-                offerTable.innerHTML = '';
-                detail.dataset.id = auctionId;
+                const response = await fetch(`offer?auctionId=${encodeURIComponent(auctionId)}`).then(response => {
+                    if (response.status === 401) {
+                        showError('session timed out, please login again');
+                        showPage(loginPage, 0);
+                        logout();
+                        return;
+                    }else if(!response.ok) {
+                        showError('Failed to load auction detail');
+                        return;
+                    }
+                    return response;
+                });
+                offerTable_offer.innerHTML = '';
+                detail_offer.dataset.id = auctionId;
 
                 const data = await response.json();
                 const { auction, offers, items, minimumOffer  } = data;
-                const spans = detail.querySelectorAll('span')
                 const status = auction.closed?'Chiusa':'Aperta';
                 const formatted = formatDate(auction.ending_at);
                 const contents = [auction.auctionId,
                     auction.title, auction.startingPrice,
                     auction.minIncrement, formatted,
                     status]
-                spans.forEach((span, index) => {span.textContent = contents[index] || "";})
+                spans_offer.forEach((span, index) => {span.textContent = contents[index] || "";})
 
                 offers.forEach(offer => {
                     const tr = document.createElement('tr');
@@ -679,7 +730,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     tdTime.textContent = formatDate(offer.offeredTime);
                     tr.appendChild(tdTime);
 
-                    offerTable.appendChild(tr);
+                    offerTable_offer.appendChild(tr);
                 });
 
                 if(offers.length === 0){
@@ -692,14 +743,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     offerTable.appendChild(tr);
                 }
 
-                const offerForm = document.getElementById('offer-form');
-                const offerInput = offerForm.querySelector('input');
                 offerInput.min = minimumOffer;
-                offerInput.placeholder = "'Inserisci almeno &euro; '" + minimumOffer;
+                offerInput.placeholder = "Inserisci almeno € " + minimumOffer;
 
-                const itemTable = document.getElementById('offer-page-items');
+
                 items.forEach(item => {
                     const tr = document.createElement('tr');
+                    tr.className = 'col-articoli';
 
                     // tdId
                     const tdId = document.createElement('td');
@@ -708,15 +758,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const tdImg = document.createElement('td');
                     const img = document.createElement('img');
-                    const tdTitle = document.createElement('td');
-                    img.src = item.cover_image;
+                    const spanTitle = document.createElement('span');
+                    img.src = '/auction_war/' + item.cover_image;
                     img.alt = 'cover';
                     img.className = 'cover'
                     img.style.width = '50px';
                     img.style.height = 'auto';
-                    tdTitle.textContent = item.title;
+                    spanTitle.textContent = item.title;
                     tdImg.appendChild(img);
-                    tdImg.appendChild(tdTitle);
+                    tdImg.appendChild(spanTitle);
                     tr.appendChild(tdImg);
 
                     // description
@@ -731,6 +781,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     itemTable.appendChild(tr);
                 });
+                localStorage.setItem('lastPage', 'buy_page');
 
             } catch (error) {
                 console.error('Failed to load auctions:', error);
@@ -738,14 +789,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
 
-        if(page === 'buyPage'){
+        if(page === buyPage){
             getBuyPageInfo()
-        }else if(page === 'sellPage'){
+        }else if(page === sellPage){
             getSellPageInfo();
-        }else if(page === 'detailPage'){
+        }else if(page === detailPage){
             getDetailPageInfo(auctionId);
-        }else if(page === 'offerPage'){
+        }else if(page === offerPage){
             getOfferPageInfo(auctionId)
+        }else if(page === loginPage){
+            loginPage.style.display = 'block';
+        }else if(page ===registerPage){
+            registerPage.style.display = 'block';
         }
     }
 
@@ -757,19 +812,19 @@ document.addEventListener('DOMContentLoaded', function() {
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+            const username_l = document.getElementById('username').value;
+            const password_l = document.getElementById('password').value;
 
             // only if exists and not empty
-            if (!username || !password) {
+            if (!username_l || !password_l) {
                 showError('Please fill in all fields');
                 return;
             }
 
-            console.log('Login attempt with:', { username, password });
+            console.log('Login attempt with:', { username_l, password_l });
             const urlParams = new URLSearchParams();
-            urlParams.append('username', username);
-            urlParams.append('password', password);
+            urlParams.append('username', username_l);
+            urlParams.append('password', password_l);
             fetch('login', {
                 method: 'POST',
                 headers: {
@@ -836,7 +891,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
 
-    const showRegisterLink = document.getElementById('register-link');
     if (showRegisterLink) {
         showRegisterLink.addEventListener('click', function(e) {
             e.preventDefault();
@@ -845,7 +899,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const loginLink = document.querySelector('.login-link a');
     if (loginLink) {
         loginLink.addEventListener('click', function(e) {
             e.preventDefault();
@@ -858,27 +911,27 @@ document.addEventListener('DOMContentLoaded', function() {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const username = document.getElementById('username_register').value.trim();
-            const password = document.getElementById('password_register').value;
-            const firstName = document.getElementById('first-name').value;
-            const lastName = document.getElementById('last-name').value;
-            const address = document.getElementById('address').value;
+            const username_r = document.getElementById('username_register').value.trim();
+            const password_r = document.getElementById('password_register').value;
+            const firstName_r = document.getElementById('first-name').value;
+            const lastName_r = document.getElementById('last-name').value;
+            const address_r = document.getElementById('address').value;
 
             console.log('Registration attempt with:', {
-                username, password, firstName, lastName, address
+                username_r, password_r, firstName_r, lastName_r, address_r
             });
 
-            if (!verifyInputs(username, password, firstName, lastName, address)) {
+            if (!verifyInputs(username_r, password_r, firstName_r, lastName_r, address_r)) {
                 return;
             }
 
 
             const urlParams = new URLSearchParams();
-            urlParams.append('username', username);
-            urlParams.append('password', password);
-            urlParams.append('firstName', firstName);
-            urlParams.append('lastName', lastName);
-            urlParams.append('address', address);
+            urlParams.append('username', username_r);
+            urlParams.append('password', password_r);
+            urlParams.append('firstName', firstName_r);
+            urlParams.append('lastName', lastName_r);
+            urlParams.append('address', address_r);
             fetch('register', {
                 method: 'POST',
                 headers: {
@@ -911,7 +964,6 @@ document.addEventListener('DOMContentLoaded', function() {
      * initiate the event listeners for the sell page
      */
     if (sellPage) {
-        const uploadItemForm = document.getElementById('create-item-form');
         if (uploadItemForm) {
             uploadItemForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -949,7 +1001,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                     .then(data => {
                         showMessage(data.message);
-                        localStorage.setItem('lastPage', 'buy_page');
                         showPage(sellPage, 0)
                     })
                     .catch(error => {
@@ -961,7 +1012,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        const createAuctionForm = document.getElementById('create-auction-form');
         if (createAuctionForm) {
             createAuctionForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -988,13 +1038,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 console.log('Creating auction:', { title, minIncrement, endDate, selectedItems });
 
-                if (isNaN(minIncrement) || Number(minIncrement) <= 0 || !Number.isInteger(minIncrement)) {
+                if (isNaN(minIncrement) || Number(minIncrement) <= 0 || !Number.isInteger(Number.parseInt(minIncrement))) {
                     showError('minimum increment must be a positive integer number');
                     return;
                 }
 
                 const endDate_Object = new Date(endDate);
-                const now = new Date();
 
                 if (endDate_Object <= now) {
                     showError('End date must be in the future');
@@ -1020,8 +1069,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                     .then(data => {
                         showMessage(data.message);
-                        localStorage.setItem('lastPage', 'sell_page');
-                        showPage(sellPage, 0);
+                        showPage(sellPage, 0).then(() =>{
+                            window.scrollTo(0, 0);
+                            localStorage.setItem('lastPage', 'sell_page');
+                        });
                     })
                     .catch(error => {
                         console.error('operation failed.:', error.message);
@@ -1036,7 +1087,6 @@ document.addEventListener('DOMContentLoaded', function() {
      * initiate the event listeners for the buy page
      */
     if (buyPage) {
-        const searchForm = document.getElementById(`keywords-form`);
         if (searchForm) {
             searchForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -1054,26 +1104,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
 
                 const data = await response.json();
-                const { openAuctions } = data;
+                const resultAuctions = data.openAuctions;
+                resultsTable.innerHTML = '';
 
-                const spanSearchEmpty = document.getElementById('no-result-span');
-                const divSearchResults = document.getElementById('search-results-div');
-                const searchTable = document.getElementById('search-results-table');
-                if(openAuctions.length === 0){
-                    spanSearchEmpty.style.display = 'block';
-                    divSearchResults.style.display = 'none';
+                if(resultAuctions.length === 0){
+                    noResultSpan.style.display = 'block';
                 }else{
-                    searchTable.innerHTML = '';
-                    spanSearchEmpty.style.display = 'none';
-                    divSearchResults.style.display = 'block';
-                    openAuctions.forEach(openAuction => {
+                    noResultSpan.style.display = 'none';
+                    resultAuctions.forEach(resultAuction => {
                         const tr = document.createElement('tr');
 
                         const tdId = document.createElement('td');
                         const a = document.createElement('a');
                         a.href = `#`;
-                        a.textContent = openAuction.auction.auctionId;
-                        a.dataset.id = openAuction.auction.auctionId;
+                        a.textContent = resultAuction.auction.auctionId;
+                        a.dataset.id = resultAuction.auction.auctionId;
                         a.addEventListener('click', () => {
                             saveHistory(a.dataset.id);
                             showPage(offerPage, a.dataset.id);
@@ -1083,10 +1128,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         tr.appendChild(tdId);
 
                         const tdItems = document.createElement('td');
-                        openAuctions.items.forEach(item => {
+                        resultAuction.items.forEach(item => {
                             const div = document.createElement('div');
                             const img = document.createElement('img');
-                            img.src = item.cover_image;
+                            img.src = '/auction_war/' + item.cover_image;
                             img.alt = 'Item image';
                             img.style.width = '30px';
                             img.style.height = '30px';
@@ -1100,18 +1145,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         tr.appendChild(tdItems);
 
                         const tdMax = document.createElement('td');
-                        tdMax.textContent = openAuction.maxOffer;
+                        tdMax.textContent = resultAuction.maxOffer;
                         tr.appendChild(tdMax);
 
                         const tdTime = document.createElement('td');
-                        tdTime.textContent = openAuction.timeLeft;
+                        tdTime.textContent = resultAuction.timeLeft;
                         tr.appendChild(tdTime);
 
-                        searchTable.appendChild(tr);
+                        resultsTable.appendChild(tr);
                     });
                 }
-                localStorage.setItem('lastPage', 'buyPage');
-
                 console.log('Searching for:', keywords);
             });
         }
@@ -1119,13 +1162,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // initiate make offer form event listener OFFERTA.html
     if (offerPage) {
-        const offerForm = document.getElementById('offer-form');
         if (offerForm) {
             offerForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
                 const offeredPrice = offerForm.querySelector('input[name="offeredPrice"]').value;
                 const minimumOffer = parseFloat(offerForm.querySelector('input[name="offeredPrice"]').min);
+
                 const auctionId = offerPage.querySelector('.auction-details').dataset.id;
                 const MAX = 1e15;
 
@@ -1161,7 +1204,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                     .then(data => {
                         showMessage(data.message);
-                        localStorage.setItem('lastPage', 'buy_page');
                         showPage(offerPage, auctionId);
                     })
                     .catch(error => {
@@ -1175,12 +1217,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //DETTAGLIO.html
     if (detailPage) {
-        const closeAuctionForm = document.getElementById('close-form');
         if (closeAuctionForm) {
             closeAuctionForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
-                const auctionId = closeAuctionForm.querySelector('input').value;
+                const auctionId = closeAuctionForm.querySelector('button').value;
                 console.log('Closing auction:', auctionId);
 
                 const urlParams = new URLSearchParams();
@@ -1203,7 +1244,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                     .then(data => {
                         showMessage(data.message);
-                        localStorage.setItem('lastPage', 'buy_page');
                         showPage(detailPage, auctionId);
                     })
                     .catch(error => {

@@ -13,9 +13,7 @@
 <div class="navbar">
     <div class="left" style="display: none;">
         <span id="user-username">Username</span>
-        <a id="logout-container">
-            <a class="sell-btn btn-logout">Logout</a>
-        </a>
+        <a id="logout-container" href="#" class="btn-logout">Safe Logout</a>
     </div>
 
     <div class="center">
@@ -28,8 +26,8 @@
     </div>
 
     <div class="right" style="display: none;">
-        <a id="sell-container" class="sell-btn">Sell</a>
-        <a id="buy-container" class="buy-btn">Buy</a>
+        <a id="sell-container" class="sell-btn" href="#">Sell</a>
+        <a id="buy-container" class="buy-btn" href="#">Buy</a>
     </div>
 </div>
 
@@ -133,7 +131,7 @@
     <span><h1>Asta aperte</h1></span>
     <table class="auction-list">
         <thead>
-        <tr>
+        <tr class="col-articoli">
             <th>Codice Asta</th>
             <th>Nome Articoli</th>
             <th>Offerta Massima €</th>
@@ -234,7 +232,7 @@
             <section class="available-items">
                 <table>
                     <thead>
-                    <tr>
+                    <tr class="col-articoli">
                         <th></th>
                         <th>Immagine</th>
                         <th>ID</th>
@@ -261,10 +259,10 @@
 
     <span><h1>Asta Risultati della ricerca:</h1></span>
     <span id="no-result-span-buy" style="display: none;">Nessuna asta in corso trovata.</span>
-    <div style="display: none;" id="search-results-div-buy">
+    <div id="search-results-div-buy">
         <table class="auction-list">
             <thead>
-            <tr>
+            <tr class="col-articoli">
                 <th>Codice Asta</th>
                 <th>Nome Articoli</th>
                 <th>Offerta Massima €</th>
@@ -281,7 +279,7 @@
     <span id="won-no-result-span">Nessuna offerta aggiudicata.</span>
     <table class="auction-list">
         <thead>
-        <tr>
+        <tr class="col-articoli">
             <th>Codice Asta</th>
             <th>Codice Articolo</th>
             <th>Nome Articoli</th>
@@ -296,10 +294,10 @@
 
     <span><h1>Asta visualizzate</h1></span>
     <span id="history-no-result-span" style="display: none;">Nessuna asta in corso trovata.</span>
-    <div style="display: none;" id="history-div">
+    <div id="history-div">
         <table class="auction-list">
             <thead>
-            <tr>
+            <tr class="col-articoli">
                 <th>Codice Asta</th>
                 <th>Nome Articoli</th>
                 <th>Offerta Massima €</th>
@@ -326,7 +324,7 @@
         <h2>Offerte</h2>
         <table>
             <thead>
-            <tr>
+            <tr class="col-articoli">
                 <th>ID Offerta</th>
                 <th>Utente</th>
                 <th>Prezzo Offerto</th>
@@ -354,7 +352,7 @@
     <span><h1>Dati articoli</h1></span>
     <table class="auction-list">
         <thead>
-        <tr>
+        <tr class="col-articoli">
             <th>Codice Articolo</th>
             <th>Nome Articoli</th>
             <th>Descrizione</th>
@@ -382,7 +380,7 @@
         <h2>Offerte</h2>
         <table>
             <thead>
-            <tr>
+            <tr class="col-articoli">
                 <th>ID Offerta</th>
                 <th>Utente</th>
                 <th>Prezzo Offerto</th>
@@ -396,9 +394,24 @@
 
     <div id="closeBtn" style="display: none;">
         <form id="close-form">
-            <button type="submit">CHIUDI</button>
+            <button type="submit" class="sell-btn">CHIUDI</button>
         </form>
     </div>
+
+    <span><h1>Dati articoli</h1></span>
+    <table class="auction-list">
+        <thead>
+        <tr class="col-articoli">
+            <th>Codice Articolo</th>
+            <th>Nome Articoli</th>
+            <th>Descrizione</th>
+            <th>Prezzo Articolo €</th>
+        </tr>
+        </thead>
+        <tbody id="detail-page-items">
+        </tbody>
+    </table>
+
 </div>
 <script src ="js.js"></script>
 </body>
