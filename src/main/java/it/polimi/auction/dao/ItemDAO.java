@@ -14,7 +14,7 @@ public class ItemDAO {
         this.con = con;
     }
 
-    public int uploadItem(String name, String description, String file_path, double price, int user_id) throws SQLException, IllegalArgumentException {
+    public int uploadItem(String name, String description, String file_path, double price, int user_id) throws SQLException {
         try (PreparedStatement insertStmt = con.prepareStatement("INSERT INTO items (name,description,cover_image,price,created_by) VALUES (?,?,?,?,?)")){
             insertStmt.setString(1, name);
             insertStmt.setString(2, description);

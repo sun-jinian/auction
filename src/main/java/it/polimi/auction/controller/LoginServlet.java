@@ -1,5 +1,6 @@
 package it.polimi.auction.controller;
 
+import com.google.gson.Gson;
 import it.polimi.auction.DBUtil;
 import it.polimi.auction.beans.User;
 import it.polimi.auction.dao.UserDAO;
@@ -9,66 +10,69 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.WebContext;
-import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
-    private TemplateEngine templateEngine;
-
-    @Override
-    public void init() {
-        this.templateEngine = (TemplateEngine) getServletContext().getAttribute("templateEngine");
-    }
+    private final Gson gson = new Gson();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
         String username = request.getParameter("username");
         String password = request.getParameter("password");
-        WebContext context = new WebContext(
-                JakartaServletWebApplication.buildApplication(getServletContext())
-                        .buildExchange(request, response),
-                request.getLocale()
-        );
+
+        Map<String, Object> responseData = new HashMap<>();
 
         try (Connection conn = DBUtil.getConnection()) {
             UserDAO uDAO = new UserDAO(conn);
             int result = uDAO.checkUser(username, password);
+
             if (result == 1) {
                 HttpSession session = request.getSession();
                 Optional<User> authenticatedUser = uDAO.findByUsername(username);
                 authenticatedUser.ifPresent(user -> session.setAttribute("user", user));
-                request.getRequestDispatcher("/home").forward(request, response);
+
+                responseData.put("message", "Login successful");
+                responseData.put("username", username);
+                response.setStatus(HttpServletResponse.SC_OK);
             } else if (result == 0) {
-                context.setVariable("error", "Password incorrect");
-                templateEngine.process("Login", context, response.getWriter());
+                responseData.put("error", "Password incorrect");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+
             } else if (result == 3) {
-                context.setVariable("error", "User not found");
-                templateEngine.process("Login", context, response.getWriter());
+                responseData.put("error", "User not found");
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             }
 
         } catch (SQLException e) {
-            context.setVariable("error", "DB error");
-            templateEngine.process("Login", context, response.getWriter());
+            responseData.put("error", "Database error");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
         }
+
+        response.getWriter().write(gson.toJson(responseData));
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws  IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         String logout = request.getParameter("logout");
 
         if(logout.equals("1")){
             HttpSession session = request.getSession(false);
             session.invalidate();
-            response.sendRedirect(request.getContextPath() + "/Login.html");
+            response.setStatus(HttpServletResponse.SC_OK);
+        }else {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 }

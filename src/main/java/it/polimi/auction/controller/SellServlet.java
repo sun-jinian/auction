@@ -1,5 +1,6 @@
 package it.polimi.auction.controller;
 
+import com.google.gson.Gson;
 import it.polimi.auction.DBUtil;
 import it.polimi.auction.beans.ClosedAuction;
 import it.polimi.auction.beans.Item;
@@ -11,13 +12,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.WebContext;
-import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024,  // 1MB
@@ -28,51 +29,43 @@ import java.util.List;
 
 @WebServlet("/sell")
 public class SellServlet extends HttpServlet {
-    private TemplateEngine templateEngine;
 
-    @Override
-    public void init() {
-        this.templateEngine = (TemplateEngine) getServletContext().getAttribute("templateEngine");
-    }
+    private final Gson gson = new Gson();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\": \"Not logged in\"}");
             return;
         }
-        WebContext context = new WebContext(
-                JakartaServletWebApplication.buildApplication(getServletContext())
-                        .buildExchange(request, response),
-                request.getLocale()
-        );
-        if(session.getAttribute("user") instanceof User user){
-            try{
-                int user_id = user.getId();
-                AuctionDAO auctionDAO = new AuctionDAO(DBUtil.getConnection());
-                ItemDAO itemDAO = new ItemDAO(DBUtil.getConnection());
-                List<OpenAuction> openAuctions = auctionDAO.findAllOpenAuction(user_id);
-                List<ClosedAuction> closedAuctions = auctionDAO.findAllClosedAuctionsAndResult(user_id);
-                List<Item> NotInAuctionItems = itemDAO.findAllItemNotInAuction(user_id);
 
-                context.setVariable("openAuctions", openAuctions);
-                context.setVariable("closedAuctions", closedAuctions);
-                context.setVariable("itemsAvailable", NotInAuctionItems);
-                context.setVariable("user", user);
+        if (session.getAttribute("user") instanceof User user) {
+            try (Connection conn = DBUtil.getConnection()) {
+                AuctionDAO auctionDAO = new AuctionDAO(conn);
+                ItemDAO itemDAO = new ItemDAO(conn);
 
-                templateEngine.process("SellPage", context, response.getWriter());
+                int userId = user.getId();
+                List<OpenAuction> openAuctions = auctionDAO.findAllOpenAuction(userId);
+                List<ClosedAuction> closedAuctions = auctionDAO.findAllClosedAuctionsAndResult(userId);
+                List<Item> notInAuctionItems = itemDAO.findAllItemNotInAuction(userId);
 
-            }catch (SQLException e) {
-                context.setVariable("error", "Failed to load auctions");
-                templateEngine.process("SellPage", context, response.getWriter());
+                Map<String, Object> responseData = new HashMap<>();
+                responseData.put("openAuctions", openAuctions);
+                responseData.put("closedAuctions", closedAuctions);
+                responseData.put("itemsAvailable", notInAuctionItems);
+
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(new Gson().toJson(responseData));
+
+            } catch (SQLException e) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("{\"error\": \"Failed to load auctions\"}");
             }
-
         }
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
     }
 }

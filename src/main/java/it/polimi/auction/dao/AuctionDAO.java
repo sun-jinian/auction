@@ -582,4 +582,76 @@ public class AuctionDAO {
 
         return closedAuctions;
     }
+
+    public List<OpenAuction> find_open_historical_auctions(String[] visitedAuctions) {
+        List<OpenAuction> openAuctions = new ArrayList<>();
+
+        if (visitedAuctions == null || visitedAuctions.length == 0) {
+            return openAuctions;
+        }
+
+        StringBuilder inClause = new StringBuilder();
+        for (int i = 0; i < visitedAuctions.length; i++) {
+            if (i > 0) inClause.append(",");
+            inClause.append("?");
+        }
+
+        // find all open auctions that are not expired and in the list of visited auctions
+        String sql = "SELECT * FROM auctions WHERE id IN (" + inClause + ") AND closed = 0";
+
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+
+            for (int i = 0; i < visitedAuctions.length; i++) {
+                stmt.setString(i + 1, visitedAuctions[i]);
+            }
+            try(ResultSet rs = stmt.executeQuery()){
+                List<Auction> auctions = new ArrayList<>();
+
+                while (rs.next()) {
+                    Auction auction = new Auction();
+                    auction.setAuctionId(rs.getInt("id"));
+                    auction.setUserId(rs.getInt("creator_id"));
+                    auction.setStartingPrice(rs.getDouble("starting_price"));
+                    auction.setMinIncrement(rs.getInt("min_increment"));
+                    auction.setEnding_at(rs.getObject("expiration", LocalDateTime.class));
+                    auction.setTitle(rs.getString("title"));
+                    auction.setCreated_at(rs.getObject("created_at", LocalDateTime.class));
+                    auction.setClosed(rs.getBoolean("closed"));
+                    auctions.add(auction);
+                }
+
+                Map<Integer, List<Item>> allItemsByAuction = allItemsByAuction(auctions);
+                Map<Integer, Double> maxOffersByAuction = getMaxOffersByAuction(auctions);
+
+                for (Auction auction : auctions) {
+                    OpenAuction openAuction = new OpenAuction();
+                    openAuction.setAuction(auction);
+
+                    LocalDateTime now = LocalDateTime.now();
+                    LocalDateTime end = auction.getEnding_at();
+
+                    Duration duration = Duration.between(now, end);
+
+                    if (duration.isNegative() || duration.isZero()) {
+                        openAuction.setTimeLeft("Tempo Scaduta");
+                    } else {
+                        long days = duration.toDays();
+                        long hours = duration.toHours() % 24;
+                        long minutes = duration.toMinutes() % 60;
+                        openAuction.setTimeLeft(days + " giorni " + hours + " ore " + minutes + " minuti");
+                    }
+
+                    openAuction.setItems(allItemsByAuction.get(auction.getAuctionId()));
+                    openAuction.setMaxOffer(maxOffersByAuction.get(auction.getAuctionId()));
+
+                    openAuctions.add(openAuction);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return openAuctions;
+
+    }
 }

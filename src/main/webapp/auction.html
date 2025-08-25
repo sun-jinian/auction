@@ -2,11 +2,418 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--    <meta http-equiv="refresh" content="5">-->
     <title>Auction House</title>
     <link rel="stylesheet" type="text/css" href="CSS/main.css">
 </head>
 <body>
+<div id="user-username" style="display: none;">
+</div>
+
+<div id="logout-container" style="display: none;">
+    <a class="sell-btn">Logout</a>
+</div>
+
+<div id="sell-container" style="display: none;">
+    <a class="sell-btn">Sell</a>
+</div>
+<div id="buy-container" style="display: none;">
+    <a class="buy-btn">Buy</a>
+</div>
+
+<div class="error-alert" style="display: none;">
+    <p style="color: red;"></p>
+</div>
+
+<div class="message-alert" style="display: none;">
+    <p style="color: green;"></p>
+</div>
+
+<div id="login_page" class="container">
+    <h1>User Login</h1>
+    <form action="login" method="POST" id="login-form">
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <label>
+                <input type="text"
+                       id="username"
+                       class="username"
+                       name="username"
+                       required
+                       autocomplete="username">
+            </label>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <label>
+                <input type="password"
+                       id="password"
+                       class="password"
+                       name="password"
+                       required
+                       autocomplete="current-password">
+            </label>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+    <p id="register-link" class="register-link">Don't have an account? <a href="#">Register now</a></p>
+</div>
+
+<div id="register_page" class="container" style="display: none;">
+    <h1>Create New Account</h1>
+
+    <form action="register" method="POST" id="registration-form">
+        <!-- Username -->
+        <div class="form-group">
+            <label for="username_register">Username:</label>
+            <input
+                    type="text"
+                    id="username_register"
+                    name="username"
+                    class="username"
+                    required
+                    pattern="[A-Za-z0-9_]{1,50}"
+                    placeholder="1-50 characters (letters, numbers, underscores)">
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+            <label for="password_register">Password:</label>
+            <input
+                    type="password"
+                    id="password_register"
+                    class="password"
+                    name="password"
+                    required
+                    minlength="8"
+                    placeholder="Minimum 8 characters">
+        </div>
+
+        <!-- Name Fields -->
+        <div class="name-fields">
+            <div class="form-group">
+                <label for="first-name">First Name:</label>
+                <input
+                        type="text"
+                        id="first-name"
+                        name="first_name"
+                        required
+                        maxlength="50">
+            </div>
+
+            <div class="form-group">
+                <label for="last-name">Last Name:</label>
+                <input
+                        type="text"
+                        id="last-name"
+                        name="last_name"
+                        required
+                        maxlength="50">
+            </div>
+
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        required
+                        maxlength="255">
+            </div>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <p class="login-link">
+        Already have an account? <a href="#">Login here</a>
+    </p>
+</div>
+
+<div id="sell_page" style="display: none;">
+
+    <span><h1>Asta aperte</h1></span>
+    <table class="auction-list">
+        <thead>
+        <tr>
+            <th>Codice Asta</th>
+            <th>Nome Articoli</th>
+            <th>Offerta Massima €</th>
+            <th>Tempo Mancante</th>
+        </tr>
+        </thead>
+        <tbody id="open-auctions-body">
+        </tbody>
+    </table>
+
+    <span><h1>Asta chiusi</h1></span>
+    <table class="auction-list">
+        <thead>
+        <tr class="col-articoli">
+            <th>Codice Asta</th>
+            <th>Nome Articoli</th>
+            <th>Scadenza</th>
+            <th>Prezzo Iniziale €</th>
+            <th>Incremento Minimo €</th>
+            <th>Stato</th>
+            <th>Tempo di Creazione</th>
+            <th>Nome Aggiudicatario</th>
+            <th>Prezzo Finale €</th>
+            <th>Indirizzo</th>
+        </tr>
+        </thead>
+        <tbody id ="closed-auctions-body">
+        </tbody>
+    </table>
+
+    <section class="create-item">
+        <h2>Carica un'articolo</h2>
+        <form  id="create-item-form" enctype="multipart/form-data">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>*Nome Articolo:</label>
+                    <label>
+                        <input type="text" name="item" required maxlength="100" placeholder="nome articolo(max 100 caratteri)">
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>*Prezzo €:</label>
+                    <label>
+                        <input type="number" name="price" required max="9999999.99"
+                               step="0.01" min="0" placeholder="prezzo in euro(max 100 caratteri)">
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="description">*Descrizione:</label>
+                    <textarea id="description"
+                              name="description"
+                              required
+                              placeholder="Inserisci una breve descrizione dell'articolo (max 255 caratteri)"
+                              maxlength="255"
+                              rows="4"
+                              style="width:100%; resize:vertical;"></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>*Immagine:</label>
+                <input type="file" name="cover" accept="image/*">
+            </div>
+
+            <button type="submit" class="btn-primary">Carica</button>
+        </form>
+    </section>
+
+    <section class="create-auction">
+        <h2>Crea una Asta</h2>
+        <form id="create-auction-form" method="POST">
+            <input type="hidden" name="sourcePage" value="home">
+            <div class="form-group">
+                <label>*Asta Title:</label>
+                <label>
+                    <input type="text"
+                           name="title"
+                           required
+                           minlength="3"
+                           maxlength="100"
+                           placeholder="Inserisci il titolo dell'asta(max 100 caratteri)"
+                           style="width: 100%;">
+                </label>
+                <label>*Minimo Incremento €:</label>
+                <label>
+                    <input type="number"
+                           name="minIncrement"
+                           placeholder="Inserisci un numero intero positivo"
+                           step="1"
+                           required
+                           min="1"
+                           style="width: 100%;">
+                </label>
+                <label>*Scadenza:</label>
+                <label>
+                    <input type="datetime-local"
+                           id="endDate"
+                           name="endDate"
+                           required>
+                </label>
+            </div>
+            <button type="submit" class="btn-primary">Crea Asta</button>
 
 
+            <h3>Seleziona gli articoli da inserire</h3>
+            <section class="available-items">
+                <table>
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th>Immagine</th>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Prezzo €</th>
+                        <th>Descrizione</th>
+                    </tr>
+                    </thead>
+                    <tbody id="item-available-table">
+                    </tbody>
+                </table>
+            </section>
+        </form>
+    </section>
+</div>
+
+<div id="buy_page" style="display: none;">
+    <form id="keywords-form" method="get" style="margin-bottom: 20px;">
+        <label for="keywords">Cerca per parola chiave:</label>
+        <input type="text" id="keywords" name="keywords" placeholder="Inserisci parola chiave" required />
+        <button type="submit">Cerca</button>
+    </form>
+
+    <span><h1>Asta Risultati della ricerca:</h1></span>
+    <span id="no-result-span-buy" style="display: none;">Nessuna asta in corso trovata.</span>
+    <div style="display: none;" id="search-results-div-buy">
+        <table class="auction-list">
+            <thead>
+            <tr>
+                <th>Codice Asta</th>
+                <th>Nome Articoli</th>
+                <th>Offerta Massima €</th>
+                <th>Tempo Mancante</th>
+            </tr>
+            </thead>
+            <tbody id="search-results-table-buy">
+            </tbody>
+        </table>
+    </div>
+
+    <!--  Offerte aggiudicate -->
+    <span><h1>Le mie offerte aggiudicate</h1></span>
+    <span id="won-no-result-span">Nessuna offerta aggiudicata.</span>
+    <table class="auction-list">
+        <thead>
+        <tr>
+            <th>Codice Asta</th>
+            <th>Codice Articolo</th>
+            <th>Nome Articoli</th>
+            <th>Descrizione</th>
+            <th>Prezzo Articolo €</th>
+        </tr>
+        </thead>
+        <tbody id="won-auctions-table">
+        </tbody>
+    </table>
+
+
+    <span><h1>Asta visualizzate</h1></span>
+    <span id="history-no-result-span" style="display: none;">Nessuna asta in corso trovata.</span>
+    <div style="display: none;" id="history-div">
+        <table class="auction-list">
+            <thead>
+            <tr>
+                <th>Codice Asta</th>
+                <th>Nome Articoli</th>
+                <th>Offerta Massima €</th>
+                <th>Tempo Mancante</th>
+            </tr>
+            </thead>
+            <tbody id="history-table">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="offer_page" style="display: none;">
+    <div class="auction-details">
+        <p><strong>ID asta:</strong> <span></span></p>
+        <p><strong>Titolo:</strong> <span></span></p>
+        <p><strong>Prezzo iniziale:</strong> €<span></span></p>
+        <p><strong>Incremento minimo:</strong> €<span></span></p>
+        <p><strong>Data di chiusura:</strong> <span></span></p>
+        <p><strong>Stato:</strong> <span></span></p>
+    </div>
+
+    <div class="offers-table">
+        <h2>Offerte</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID Offerta</th>
+                <th>Utente</th>
+                <th>Prezzo Offerto</th>
+                <th>Data</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <form id="offer-form" method="post">
+            <label>
+                <input type="number"
+                       name="offeredPrice"
+                       step="0.01"
+                       max="1000000000000000"
+                       required/>
+            </label>
+            <button type="submit">offer</button>
+        </form>
+    </div>
+
+    <span><h1>Dati articoli</h1></span>
+    <table class="auction-list">
+        <thead>
+        <tr>
+            <th>Codice Articolo</th>
+            <th>Nome Articoli</th>
+            <th>Descrizione</th>
+            <th>Prezzo Articolo €</th>
+        </tr>
+        </thead>
+        <tbody id="offer-page-items">
+        </tbody>
+    </table>
+</div>
+
+<div id="detail_page" style="display: none;">
+    <h1>Dettaglio Asta</h1>
+
+    <div id="auction-details" class="auction-details">
+        <p><strong>ID asta:</strong> <span></span></p>
+        <p><strong>Titolo:</strong> <span></span></p>
+        <p><strong>Prezzo iniziale:</strong> €<span></span></p>
+        <p><strong>Incremento minimo:</strong> €<span></span></p>
+        <p><strong>Data di chiusura:</strong> <span></span></p>
+        <p><strong>Stato:</strong> <span></span></p>
+    </div>
+
+    <div class="offers-table">
+        <h2>Offerte</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID Offerta</th>
+                <th>Utente</th>
+                <th>Prezzo Offerto</th>
+                <th>Data</th>
+            </tr>
+            </thead>
+            <tbody id="offers-table">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="closeBtn" style="display: none;">
+        <form id="close-form" method="post">
+            <input type="hidden" name="auction_id"/>
+            <button type="submit">CHIUDI</button>
+        </form>
+    </div>
+</div>
+<script src ="js.js"></script>
 </body>
 </html>
