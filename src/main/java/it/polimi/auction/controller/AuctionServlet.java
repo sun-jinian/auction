@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static it.polimi.auction.Util.requireParameter;
+
 @WebServlet("/auction")
 public class AuctionServlet extends HttpServlet {
 
@@ -49,6 +51,13 @@ public class AuctionServlet extends HttpServlet {
         }
 
         String auction_id_Str = request.getParameter("id");
+
+        if (auction_id_Str == null || auction_id_Str.isEmpty()) {
+            request.setAttribute("error", "No auction id provided");
+            request.getRequestDispatcher("/auction").forward(request, response);
+            return;
+        }
+
         int auction_id;
         if(session.getAttribute("user") instanceof User user){
             try {
@@ -124,11 +133,5 @@ public class AuctionServlet extends HttpServlet {
         }
     }
 
-    private String requireParameter(HttpServletRequest request, String name) throws ServletException {
-        String value = request.getParameter(name);
-        if (value == null || value.isBlank()) {
-            throw new ServletException("Missing required parameter: " + name);
-        }
-        return value;
-    }
+
 }

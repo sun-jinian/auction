@@ -47,6 +47,13 @@ public class CloseServlet extends HttpServlet {
         );
 
         String auction_id_Str = request.getParameter("auction_id");
+
+        if (auction_id_Str == null || auction_id_Str.isEmpty()) {
+            request.setAttribute("error", "No auction id provided");
+            doGet(request, response);
+            return;
+        }
+
         int auction_id;
         if (session.getAttribute("user") instanceof User user) {
             try {

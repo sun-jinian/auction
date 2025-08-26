@@ -18,6 +18,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
+import static it.polimi.auction.Util.requireParameter;
+
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
 
@@ -31,8 +33,6 @@ public class LoginServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
         WebContext context = new WebContext(
                 JakartaServletWebApplication.buildApplication(getServletContext())
                         .buildExchange(request, response),
@@ -40,6 +40,8 @@ public class LoginServlet extends HttpServlet {
         );
 
         try (Connection conn = DBUtil.getConnection()) {
+            String username = requireParameter(request, "username");
+            String password = requireParameter(request,"password");
             UserDAO uDAO = new UserDAO(conn);
             int result = uDAO.checkUser(username, password);
             if (result == 1) {
@@ -57,6 +59,9 @@ public class LoginServlet extends HttpServlet {
 
         } catch (SQLException e) {
             context.setVariable("error", "DB error");
+            templateEngine.process("Login", context, response.getWriter());
+        } catch (IllegalArgumentException e){
+            context.setVariable("error", e.getMessage());
             templateEngine.process("Login", context, response.getWriter());
         }
     }

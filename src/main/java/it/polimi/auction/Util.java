@@ -17,4 +17,12 @@ public class Util {
 
         return (User) session.getAttribute("user");
     }
+
+    public static String requireParameter(HttpServletRequest request, String name) {
+        String value = request.getParameter(name);
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Missing required parameter: " + name);
+        }
+        return value;
+    }
 }

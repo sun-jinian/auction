@@ -67,6 +67,11 @@ public class OfferServlet extends HttpServlet {
 
         try {
             Auction auction = auctionDAO.findById(auctionId);
+            if(auction == null){
+                request.setAttribute("error", "Auction not found");
+                request.getRequestDispatcher("/offer").forward(request, response);
+                return;
+            }
             List<Offer> offers = auctionDAO.findAllOffersByAuction(auctionId);
             List<Item> items = itemDAO.findAllItemInAuction(auctionId);
 

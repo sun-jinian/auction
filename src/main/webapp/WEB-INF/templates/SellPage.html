@@ -3,15 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title class="logo">Vendo</title>
-    <link rel="stylesheet" th:href="@{/CSS/main.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/CSS/main.css}">
 </head>
-<style>
-    input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    }
-</style>
 <body>
 <div style="display: flex; justify-content: space-between; align-items: center;">
     <span th:text="'hello, '+${user.username}">Username</span>

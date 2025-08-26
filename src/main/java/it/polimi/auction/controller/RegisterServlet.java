@@ -13,6 +13,8 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import static it.polimi.auction.Util.requireParameter;
+
 @WebServlet("/register")
 public class RegisterServlet extends HttpServlet {
 
@@ -32,14 +34,14 @@ public class RegisterServlet extends HttpServlet {
                 request.getLocale()
         );
 
-        // Get form parameters
-        String username = request.getParameter("username").trim();
-        String password = request.getParameter("password");
-        String firstName = request.getParameter("first_name").trim();
-        String lastName = request.getParameter("last_name").trim();
-        String address = request.getParameter("address");
 
-        try {
+
+        try {// Get form parameters
+            String username = requireParameter(request,"username").trim();
+            String password = requireParameter(request,"password");
+            String firstName = requireParameter(request, "first_name").trim();
+            String lastName = requireParameter(request, "last_name").trim();
+            String address = requireParameter(request, "address");
             UserDAO userDAO = new UserDAO(DBUtil.getConnection());
             if(userDAO.createUser(username, password, firstName, lastName,address) == 1) {
                 response.sendRedirect("Login.html?registration=success");
@@ -51,7 +53,7 @@ public class RegisterServlet extends HttpServlet {
             context.setVariable("error", "Database error");
             templateEngine.process("Register", context, response.getWriter());
         } catch (IllegalArgumentException e){
-            context.setVariable("error", "Invalid input");
+            context.setVariable("error", e.getMessage());
             templateEngine.process("Register", context, response.getWriter());
         }
     }

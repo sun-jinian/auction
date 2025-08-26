@@ -16,6 +16,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
+import static it.polimi.auction.Util.requireParameter;
+
 @MultipartConfig(
         fileSizeThreshold = 1024 * 1024,  // 1MB
         maxFileSize = 1024 * 1024 * 10,   // 10MB
@@ -42,13 +44,29 @@ public class UploadItemServlet extends HttpServlet {
         Path userUploadDir = Paths.get(uploadBaseDir, "user_" + user_id);
 //      String appPath = request.getServletContext().getRealPath("/");
 
+        String item;
+        String description;
+        String priceStr;
 
-        String item = request.getParameter("item");
-        String description = request.getParameter("description");
-        String priceStr = request.getParameter("price");
-        Part coverPart = request.getPart("cover");
+        try{
+            item = requireParameter(request, "item");
+            description = requireParameter(request, "description");
+            priceStr = requireParameter(request, "price");
+        }catch (IllegalArgumentException e){
+            request.setAttribute("error", e.getMessage());
+            request.getRequestDispatcher("/sell").forward(request, response);
+            return;
+        }
+        Part coverPart;
+        try{
+            coverPart = request.getPart("cover");
+        }catch (IOException | ServletException e){
+            request.setAttribute("error", "Error while uploading cover");
+            request.getRequestDispatcher("/sell").forward(request, response);
+            return;
+        }
         //if title is empty or artist is empty or mp3Part is empty, return error
-        if (item.isEmpty() || description.isEmpty() || coverPart.getSize() == 0 || priceStr.isEmpty()) {
+        if (coverPart.getSize() == 0) {
             request.setAttribute("error", "Required fields are empty");
             request.getRequestDispatcher("/sell").forward(request, response);
             return;
@@ -68,7 +86,9 @@ public class UploadItemServlet extends HttpServlet {
             try {
                 Files.createDirectories(userUploadDir);
             } catch (IOException e) {
-                throw new ServletException("Can't create upload directory", e);
+                request.setAttribute("error", "Error while uploading cover");
+                request.getRequestDispatcher("/sell").forward(request, response);
+                return;
             }
             saveFile(coverPart, coverPath.toString());
             //save relatives paths in database
