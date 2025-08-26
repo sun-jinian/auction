@@ -25,18 +25,14 @@ public class RegisterServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        Map<String, Object> responseData = new HashMap<>();
-
-        // Get form parameters
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        String firstName = request.getParameter("firstName");
-        String lastName = request.getParameter("lastName");
-        String address = request.getParameter("address");
 
         try (Connection conn = DBUtil.getConnection()) {
             UserDAO userDAO = new UserDAO(conn);
-
+            String username = request.getParameter("username");
+            String password = request.getParameter("password");
+            String firstName = request.getParameter("firstName");
+            String lastName = request.getParameter("lastName");
+            String address = request.getParameter("address");
             int result = userDAO.createUser(
                     username.trim(),
                     password,
@@ -58,6 +54,9 @@ public class RegisterServlet extends HttpServlet {
         } catch (IllegalArgumentException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\": \"Username already exists\"}");
+        } catch (Exception e){
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\": \"Invalid input\"}");
         }
     }
 }

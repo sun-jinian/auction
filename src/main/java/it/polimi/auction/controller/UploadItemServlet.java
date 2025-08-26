@@ -50,13 +50,23 @@ public class UploadItemServlet extends HttpServlet {
             String uploadBaseDir = getServletContext().getInitParameter("upload.dir");
             Path userUploadDir = Paths.get(uploadBaseDir, "user_" + user_id);
 
+            String item;
+            String description;
+            String priceStr;
 
-            String item = request.getParameter("item");
-            String description = request.getParameter("description");
-            String priceStr = request.getParameter("price");
+            try{
+                item = request.getParameter("item");
+                description = request.getParameter("description");
+                priceStr = request.getParameter("price");
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                responseData.put("error", "Required fields is missing");
+                response.getWriter().write(gson.toJson(responseData));
+                return;
+            }
             Part coverPart = request.getPart("cover");
             //if title is empty or artist is empty or mp3Part is empty, return error
-            if (item.isEmpty() || description.isEmpty() || coverPart.getSize() == 0 || priceStr.isEmpty()) {
+            if (item.isBlank() || description.isBlank() || coverPart.getSize() == 0 || priceStr.isBlank()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 responseData.put("error", "Required fields is missing");
                 response.getWriter().write(gson.toJson(responseData));
