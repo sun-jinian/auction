@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: Web Technologies Project 2025 @ PoliMi
+message: >-
+  If you use this software, please cite it as written.
+type: software
+authors:
+  - given-names: Vlad
+    family-names: Raileanu
+    email: raileanu.vlad29@gmail.com
+  - given-names: Vittorio
+    family-names: Robecchi
+    email: vittorio.robecchi@gmail.com
+url: https://github.com/VictuarVi/wt-project-2025

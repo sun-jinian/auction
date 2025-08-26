@@ -808,6 +808,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * handle login form submission
      * @type {Element}
      */
+    // function called login() in documentation
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -891,6 +892,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
 
+    //showRegisterLink()
     if (showRegisterLink) {
         showRegisterLink.addEventListener('click', function(e) {
             e.preventDefault();
@@ -899,6 +901,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    //loginLink()
     if (loginLink) {
         loginLink.addEventListener('click', function(e) {
             e.preventDefault();
@@ -907,6 +910,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    //register()
     if (registerForm) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -963,7 +967,9 @@ document.addEventListener('DOMContentLoaded', function() {
     /**
      * initiate the event listeners for the sell page
      */
+
     if (sellPage) {
+        //uploadItem()
         if (uploadItemForm) {
             uploadItemForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -1012,6 +1018,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
+        //createAuction()
         if (createAuctionForm) {
             createAuctionForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -1087,6 +1094,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * initiate the event listeners for the buy page
      */
     if (buyPage) {
+        //search()
         if (searchForm) {
             searchForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -1162,6 +1170,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // initiate make offer form event listener OFFERTA.html
     if (offerPage) {
+        //offer()
         if (offerForm) {
             offerForm.addEventListener('submit', async function(e) {
                 e.preventDefault();

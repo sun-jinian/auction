@@ -1,0 +1,89 @@
+subpar:
+  type: web
+  title: subpar package
+  url: https://typst.app/universe/package/subpar
+chronos:
+  type: repository
+  title: chronos (typst package)
+  author: Louis Heredero
+  url: https://typst.app/universe/package/chronos
+  license: Apache-2.0
+drawio:
+  type: web
+  title: Draw.io
+  url: https://app.diagrams.net
+tinted-theming:
+  type: repository
+  title: Tinted Theming
+  url: https://github.com/tinted-theming/home
+part:
+  type: reference
+  title: Part interface
+  url: https://jakarta.ee/specifications/servlet/6.1/apidocs/jakarta.servlet/jakarta/servlet/http/part
+java:
+  type: web
+  title: Java Development Kit
+  url: https://openjdk.java.net
+maven:
+  type: web
+  title: Apache Maven
+  url: https://maven.apache.org
+tomcat:
+  type: web
+  title: Apache Tomcat
+  url: https://tomcat.apache.org
+thymeleaf:
+  type: web
+  title: Thymeleaf
+  url: https://www.thymeleaf.org
+mariadb:
+  type: web
+  title: MariaDB
+  url: https://mariadb.org
+sqlite:
+  type: web
+  title: SQLite
+  url: https://sqlite.org/
+intellij:
+  type: repository
+  title: Web Technologies IntelliJ Guide @ PoliMi
+  author: Vittorio Robecchi
+  url: https://github.com/VictuarVi/wt-intellij-guide
+typst:
+  type: repository
+  title: Typst
+  author: ["Mädje, Laurenz", "Haug, Martin", "The Typst Project Developers"]
+  url: https://github.com/typst/typst
+  license: Apache-2.0
+ncs:
+  type: audio
+  title: NoCopyrightSounds
+  url: https://ncs.io/
+record-classes:
+  type: web
+  title: Record Classes
+  url: https://docs.oracle.com/en/java/javase/17/language/records.html
+sql-js:
+  type: repository
+  title: sql.js
+  url: https://github.com/sql-js/sql.js/
+hikaricp:
+  type: repository
+  title: HikariCP
+  url: https://github.com/brettwooldridge/HikariCP
+spring-boot:
+  type: web
+  title: Spring Boot
+  url: https://spring.io/
+hibernate:
+  type: web
+  title: Hibernate
+  url: https://hibernate.org/
+password4j:
+  type: repository
+  title: Password4J
+  url: https://github.com/Password4j/password4j
+bulma:
+  type: web
+  title: Bulma
+  url: https://bulma.io/
