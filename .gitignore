@@ -36,3 +36,4 @@ build/
 
 #databases
 src/main/resources/db.properties
+src/main/resources/backup.sql
