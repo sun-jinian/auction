@@ -36,6 +36,8 @@ public class ThymeleafConfig implements ServletContextListener {
 
     }
 
+    //Restituisce un oggetto TemplateEngine, che serve per
+    // elaborare e renderizzare i template HTML con Thymeleaf.
     public static TemplateEngine getTemplateEngine(ServletContext context) {
         TemplateEngine engine = new TemplateEngine();
         JakartaServletWebApplication webApp = JakartaServletWebApplication.buildApplication(context);

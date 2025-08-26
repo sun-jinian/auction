@@ -65,34 +65,40 @@
         <th>Nome Articoli</th>
         <th>Descrizione</th>
         <th>Prezzo Articolo €</th>
+        <th>Prezzo Finale €</th>
     </tr>
     </thead>
     <tbody>
-    <tr th:each="wonAuction : ${wonAuctions}">
-        <td th:text="${wonAuction.auction.auctionId}">test_id</td>
-        <td>
-            <div th:each="item : ${wonAuction.items}">
-                <span th:text="${item.id}">test_item_id</span>
-            </div>
-        </td>
-        <td>
-            <div th:each="item : ${wonAuction.items}">
-                <img th:src="@{${item.cover_image}}" alt="Item image"
+    <th:block th:each="wonAuction : ${wonAuctions}">
+        <tr>
+            <td th:text="${wonAuction.auction.auctionId}"
+                th:rowspan="${#lists.size(wonAuction.items)}">AuctionID</td>
+
+            <td th:text="${wonAuction.items[0].id}">ItemID</td>
+            <td>
+                <img th:src="@{${wonAuction.items[0].cover_image}}"
                      style="width:30px;height:30px;margin-left:5px;">
-                <span th:text="${item.title}">test_item_title</span>
-            </div>
-        </td>
-        <td>
-            <div th:each="item : ${wonAuction.items}">
-                <span th:text="${item.description}">test_item_title</span>
-            </div>
-        </td>
-        <td>
-            <div th:each="item : ${wonAuction.items}">
-                <span th:text="${item.price}">test_item_title</span>
-            </div>
-        </td>
-    </tr>
+                <span th:text="${wonAuction.items[0].title}">Title</span>
+            </td>
+            <td th:text="${wonAuction.items[0].description}">Description</td>
+            <td th:text="${wonAuction.items[0].price}">Price</td>
+
+            <td th:text="${wonAuction.result.final_price}"
+                th:rowspan="${#lists.size(wonAuction.items)}">TotalPrice</td>
+        </tr>
+
+        <!-- 剩余 items -->
+        <tr th:each="item, iterStat : ${wonAuction.items}" th:if="${iterStat.index > 0}">
+            <td th:text="${item.id}">ItemID</td>
+            <td>
+                <img th:src="@{${item.cover_image}}"
+                     style="width:30px;height:30px;margin-left:5px;">
+                <span th:text="${item.title}">Title</span>
+            </td>
+            <td th:text="${item.description}">Description</td>
+            <td th:text="${item.price}">Price</td>
+        </tr>
+    </th:block>
     </tbody>
 </table>
 </body>

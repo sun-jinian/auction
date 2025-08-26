@@ -69,6 +69,16 @@ public class LoginServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws  IOException {
         String logout = request.getParameter("logout");
+        WebContext context = new WebContext(
+                JakartaServletWebApplication.buildApplication(getServletContext())
+                        .buildExchange(request, response),
+                request.getLocale()
+        );
+        if(logout == null){
+            context.setVariable("error", "You are not logged in");
+            templateEngine.process("Login", context, response.getWriter());
+            return;
+        }
 
         if(logout.equals("1")){
             HttpSession session = request.getSession(false);

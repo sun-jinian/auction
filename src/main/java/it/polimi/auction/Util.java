@@ -18,6 +18,7 @@ public class Util {
         return (User) session.getAttribute("user");
     }
 
+    // Helper method to require a parameter in a request or throw an exception if it's missing
     public static String requireParameter(HttpServletRequest request, String name) {
         String value = request.getParameter(name);
         if (value == null || value.isBlank()) {

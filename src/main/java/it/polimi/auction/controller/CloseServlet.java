@@ -65,29 +65,29 @@ public class CloseServlet extends HttpServlet {
 
                 // check if auction exists
                 if (auction == null) {
-                    request.setAttribute("error", "Auction not found");
-                    doGet(request, response);
+                    context.setVariable("error", "Auction not found");
+                    templateEngine.process("Error", context, response.getWriter());
                     return;
                 }
 
                 // check if user is the owner of the auction
                 if(auction.getUserId() != user.getId()){
-                    request.setAttribute("error", "You are not the owner of this auction");
-                    doGet(request, response);
+                    context.setVariable("error", "You are not the owner of this auction");
+                    templateEngine.process("Error", context, response.getWriter());
                     return;
                 }
 
                 //check if auction is expired
                 if (auction.getEnding_at().isAfter(LocalDateTime.now())) {
-                    request.setAttribute("error", "Auction has not ended yet");
-                    doGet(request, response);
+                    context.setVariable("error", "Auction has not ended yet");
+                    templateEngine.process("Error", context, response.getWriter());
                     return;
                 }
 
                 // check if auction is already closed
                 if (auction.isClosed()) {
-                    request.setAttribute("error", "Auction is already closed");
-                    doGet(request, response);
+                    context.setVariable("error", "Auction is already closed");
+                    templateEngine.process("Error", context, response.getWriter());
                     return;
                 }
                 auctionDAO.closeAuction(auction_id);
@@ -106,11 +106,11 @@ public class CloseServlet extends HttpServlet {
 
             } catch (NumberFormatException e) {
                 //if auction_id is not a correct number, redirect to error page
-                request.setAttribute("error", "wrong format auction id");
-                doGet(request, response);
+                context.setVariable("error", "wrong format auction id");
+                templateEngine.process("Error", context, response.getWriter());
             } catch (SQLException e) {
-                request.setAttribute("error", "Database connection failed");
-                doGet(request, response);
+                context.setVariable("error", "Database connection failed");
+                templateEngine.process("Error", context, response.getWriter());
             }
         }
     }

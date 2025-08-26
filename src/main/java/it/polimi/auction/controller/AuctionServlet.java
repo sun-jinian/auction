@@ -61,16 +61,27 @@ public class AuctionServlet extends HttpServlet {
         int auction_id;
         if(session.getAttribute("user") instanceof User user){
             try {
-                auction_id = Integer.parseInt(auction_id_Str);
-                AuctionDAO auctionDAO = new AuctionDAO(DBUtil.getConnection());
-                Auction auction = auctionDAO.findById(auction_id);
-                List<Offer> offers = auctionDAO.findAllOffersByAuction(auction_id);
-
                 WebContext context = new WebContext(
                         JakartaServletWebApplication.buildApplication(getServletContext())
                                 .buildExchange(request, response),
                         request.getLocale()
                 );
+
+                auction_id = Integer.parseInt(auction_id_Str);
+                AuctionDAO auctionDAO = new AuctionDAO(DBUtil.getConnection());
+                Auction auction = auctionDAO.findById(auction_id);
+                if(auction == null){
+                    context.setVariable("error", "No auction found with id: " + auction_id);
+                    templateEngine.process("Error", context, response.getWriter());
+                    return;
+                }
+                if(auction.getUserId() != user.getId()){
+                    context.setVariable("error", "You are not authorized to view this auction");
+                    templateEngine.process("Error", context, response.getWriter());
+                    return;
+                }
+                List<Offer> offers = auctionDAO.findAllOffersByAuction(auction_id);
+
                 boolean trulyCloseable = auction.getEnding_at().isBefore(LocalDateTime.now()) && !auction.isClosed();
                 context.setVariable("closeable", trulyCloseable);
                 context.setVariable("auction", auction);
