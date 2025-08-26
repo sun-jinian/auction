@@ -61,11 +61,9 @@ public class SellServlet extends HttpServlet {
                 responseData.put("closedAuctions", closedAuctions);
                 responseData.put("itemsAvailable", notInAuctionItems);
 
-                // 重置缓冲区并设置成功状态
                 response.resetBuffer();
                 response.setStatus(HttpServletResponse.SC_OK);
 
-                // 使用try-with-resources确保writer正确关闭
                 try (PrintWriter out = response.getWriter()) {
                     out.print(gson.toJson(responseData));
                     out.flush();
