@@ -66,6 +66,33 @@
     </form>
 </div>
 
+<span><h1>Dati articoli</h1></span>
+<span th:if="${items.size() == 0}">Nessuna articolo trovato (sicuramente c'e un errore)</span>
+<table class="auction-list">
+    <thead>
+    <tr>
+        <th>Codice Articolo</th>
+        <th>Nome Articoli</th>
+        <th>Descrizione</th>
+        <th>Prezzo Articolo €</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${items}">
+        <td th:text="${item.id}">test_id</td>
+        <td>
+            <div th:each="item : ${items}">
+                <img th:src="@{${item.cover_image}}" alt="Item image"
+                     style="width:30px;height:30px;margin-left:5px;">
+                <span th:text="${item.title}">test_item_title</span>
+            </div>
+        </td>
+        <td th:text="${item.description}">test_item_title</td>
+        <td th:text="${item.price}">test_item_price</td>
+    </tr>
+    </tbody>
+</table>
+
 
 </body>
 </html>

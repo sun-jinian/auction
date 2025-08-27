@@ -3,6 +3,7 @@ package it.polimi.auction.controller;
 import it.polimi.auction.DBUtil;
 import it.polimi.auction.Util;
 import it.polimi.auction.beans.Auction;
+import it.polimi.auction.beans.Item;
 import it.polimi.auction.beans.Offer;
 import it.polimi.auction.beans.User;
 import it.polimi.auction.dao.AuctionDAO;
@@ -81,12 +82,15 @@ public class AuctionServlet extends HttpServlet {
                     return;
                 }
                 List<Offer> offers = auctionDAO.findAllOffersByAuction(auction_id);
+                ItemDAO itemDAO = new ItemDAO(DBUtil.getConnection());
+                List<Item> items = itemDAO.findAllItemInAuction(auction_id);
 
                 boolean trulyCloseable = auction.getEnding_at().isBefore(LocalDateTime.now()) && !auction.isClosed();
                 context.setVariable("closeable", trulyCloseable);
                 context.setVariable("auction", auction);
                 context.setVariable("offers", offers);
                 context.setVariable("user", user);
+                context.setVariable("items", items);
 
                 templateEngine.process("DETTAGLIO", context, response.getWriter());
 
