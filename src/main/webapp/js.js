@@ -300,7 +300,6 @@ document.addEventListener('DOMContentLoaded', function() {
                             tdPrice.textContent = item.price;
                             tr.appendChild(tdPrice);
 
-                            // 最后一列：TotalPrice（只在第一行显示，跨所有 item）
                             if (index === 0) {
                                 const tdTotal = document.createElement('td');
                                 tdTotal.textContent = wonAuction.result.final_price;
@@ -308,7 +307,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 tr.appendChild(tdTotal);
                             }
 
-                            // 把行加到表格里
                             wonTable.appendChild(tr);
                         });
                     });
