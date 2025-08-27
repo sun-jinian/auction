@@ -36,8 +36,6 @@ public class UserDAO {
 
             // if affected row count is 1, user was inserted successfully
             return insertStmt.executeUpdate();
-        }catch (SQLException e){
-            throw new SQLException(e);
         }
     }
 
@@ -57,8 +55,6 @@ public class UserDAO {
             } else {
                 return 3;
                 }
-        } catch (Exception e) {
-            throw new SQLException(e);
         }
     }
 
