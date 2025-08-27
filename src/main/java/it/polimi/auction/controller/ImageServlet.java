@@ -12,12 +12,20 @@ import java.io.OutputStream;
 
 @WebServlet("/uploads/*")
 public class ImageServlet extends HttpServlet {
-    private static final String BASE_DIR = "D:/opt/auction/uploads";
 
+    //this is the directory where the uploaded images are stored
+    private static final String base_dir = "D:/opt/auction/uploads";
+
+    /**
+     * Handles HTTP GET requests for images in the uploads directory.
+     * @param req HTTP request
+     * @param resp HTTP response
+     * @throws IOException if an I/O error occurs
+     */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String path = req.getPathInfo();
-        File file = new File(BASE_DIR, path);
+        File file = new File(base_dir, path);
 
         if (!file.exists()) {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);

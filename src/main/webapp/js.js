@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         openAuction.items.forEach(item => {
                             const div = document.createElement('div');
                             const img = document.createElement('img');
-                            img.src = '/auction_war/' + item.cover_image;
+                            img.src = '/auction_ria/' + item.cover_image;
                             img.alt = 'Item image';
                             img.style.width = '30px';
                             img.style.height = '30px';
@@ -257,47 +257,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (wonAuctions.length > 0) {
                     wonSpan.style.display = 'none';
                     wonAuctions.forEach(wonAuction => {
-                        wonAuction.items.forEach(item => {
+                        const items = wonAuction.items;
+
+                        items.forEach((item, index) => {
                             const tr = document.createElement('tr');
 
-                            // Auction ID
-                            const tdId = document.createElement('td');
-                            tdId.textContent = wonAuction.auction.auctionId;
-                            tr.appendChild(tdId);
+                            if (index === 0) {
+                                const tdAuctionId = document.createElement('td');
+                                tdAuctionId.textContent = wonAuction.auction.auctionId;
+                                tdAuctionId.rowSpan = items.length;
+                                tr.appendChild(tdAuctionId);
+                            }
 
+                            // Item Id
                             const tdItemId = document.createElement('td');
                             tdItemId.textContent = item.id;
                             tr.appendChild(tdItemId);
 
-                            // Item images + titles
+                            // Item image + title
                             const tdItems = document.createElement('td');
                             const div = document.createElement('div');
                             const img = document.createElement('img');
-                            img.src = '/auction_war/' + item.cover_image;
+                            img.src = '/auction_ria/' + item.cover_image;
                             img.alt = 'Item image';
                             img.style.width = '30px';
                             img.style.height = '30px';
                             img.style.marginLeft = '5px';
-
-                            let span = document.createElement('span');
+                            const span = document.createElement('span');
                             span.textContent = item.title;
-
                             div.appendChild(img);
                             div.appendChild(span);
-
                             tdItems.appendChild(div);
                             tr.appendChild(tdItems);
 
+                            // Item description
+                            const tdDescription = document.createElement('td');
+                            tdDescription.textContent = item.description;
+                            tr.appendChild(tdDescription);
 
-                            const tdDescriptions = document.createElement('td');
-                            tdDescriptions.textContent = item.description;
-                            tr.appendChild(tdDescriptions);
+                            // Item price
+                            const tdPrice = document.createElement('td');
+                            tdPrice.textContent = item.price;
+                            tr.appendChild(tdPrice);
 
-                            // Item prices
-                            const tdPrices = document.createElement('td');
-                            tdPrices.textContent = item.price;
-                            tr.appendChild(tdPrices);
+                            // 最后一列：TotalPrice（只在第一行显示，跨所有 item）
+                            if (index === 0) {
+                                const tdTotal = document.createElement('td');
+                                tdTotal.textContent = wonAuction.result.final_price;
+                                tdTotal.rowSpan = items.length;
+                                tr.appendChild(tdTotal);
+                            }
 
+                            // 把行加到表格里
                             wonTable.appendChild(tr);
                         });
                     });
@@ -317,6 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         a.textContent = historyAuction.auction.auctionId;
                         a.dataset.id = historyAuction.auction.auctionId;
                         a.addEventListener('click', () => {
+                            saveHistory(a.dataset.id);
                             showPage(offerPage, a.dataset.id);
                         });
 
@@ -329,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const div = document.createElement('div');
                             const img = document.createElement('img');
 
-                            img.src = '/auction_war/' + item.cover_image;
+                            img.src = '/auction_ria/' + item.cover_image;
                             img.alt = 'Item image';
                             img.style.width = '30px';
                             img.style.height = '30px';
@@ -406,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     openAuction.items.forEach(item => {
                         const div = document.createElement('div');
                         const img = document.createElement('img');
-                        img.src = '/auction_war/' + item.cover_image;
+                        img.src = '/auction_ria/' + item.cover_image;
                         img.alt = 'Item image';
                         img.style.width = '30px';
                         img.style.height = '30px';
@@ -451,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const div = document.createElement('div');
                         div.style.whiteSpace = 'nowrap';
                         const img = document.createElement('img');
-                        img.src = '/auction_war/' + item.cover_image;
+                        img.src = '/auction_ria/' + item.cover_image;
                         img.alt = 'Item image';
                         img.style.width = '30px';
                         img.style.height = '30px';
@@ -528,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const tdItem = document.createElement('td');
                     const img = document.createElement('img');
-                    img.src = '/auction_war/' + item.cover_image;
+                    img.src = '/auction_ria/' + item.cover_image;
                     img.alt = 'cover';
                     img.className = 'cover'
                     img.style.width = '50px';
@@ -654,7 +666,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const tdImg = document.createElement('td');
                     const img = document.createElement('img');
                     const spanTitle = document.createElement('span');
-                    img.src = '/auction_war/' + item.cover_image;
+                    img.src = '/auction_ria/' + item.cover_image;
                     img.alt = 'cover';
                     img.className = 'cover'
                     img.style.width = '50px';
@@ -759,7 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const tdImg = document.createElement('td');
                     const img = document.createElement('img');
                     const spanTitle = document.createElement('span');
-                    img.src = '/auction_war/' + item.cover_image;
+                    img.src = '/auction_ria/' + item.cover_image;
                     img.alt = 'cover';
                     img.className = 'cover'
                     img.style.width = '50px';
@@ -804,54 +816,56 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    async function login(e) {
+        e.preventDefault();
+
+        const username_l = document.getElementById('username').value;
+        const password_l = document.getElementById('password').value;
+
+        // only if exists and not empty
+        if (!username_l || !password_l) {
+            showError('Please fill in all fields');
+            return;
+        }
+
+        console.log('Login attempt with:', {username_l, password_l});
+        const urlParams = new URLSearchParams();
+        urlParams.append('username', username_l);
+        urlParams.append('password', password_l);
+        await fetch('login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: urlParams
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errData => {
+                        throw new Error(errData.error || 'Unknown error');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Login successful:', data);
+                last_username = data.username;
+                showMessage(data.message);
+                showPage(lastPage, 0);
+            })
+            .catch(error => {
+                console.error('operation failed.:', error.message);
+                showError(error.message);
+            });
+    }
+
     /**
      * handle login form submission
      * @type {Element}
      */
     // function called login() in documentation
     if (loginForm) {
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const username_l = document.getElementById('username').value;
-            const password_l = document.getElementById('password').value;
-
-            // only if exists and not empty
-            if (!username_l || !password_l) {
-                showError('Please fill in all fields');
-                return;
-            }
-
-            console.log('Login attempt with:', { username_l, password_l });
-            const urlParams = new URLSearchParams();
-            urlParams.append('username', username_l);
-            urlParams.append('password', password_l);
-            fetch('login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: urlParams
-            })
-                .then(response => {
-                    if(!response.ok){
-                        return response.json().then(errData => {
-                            throw new Error(errData.error || 'Unknown error');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                     console.log('Login successful:', data);
-                     last_username = data.username;
-                     showMessage(data.message);
-                     showPage(lastPage, 0);
-                 })
-                .catch(error => {
-                    console.error('operation failed.:', error.message);
-                    showError(error.message);
-                 });
-        });
+        loginForm.addEventListener('submit',login );
     }
 
     /**
@@ -892,54 +906,184 @@ document.addEventListener('DOMContentLoaded', function() {
         return true;
     }
 
+    function showRegister(e) {
+        e.preventDefault();
+        loginForm.reset();
+        showPage(registerPage, 0);
+    }
+
     //showRegisterLink()
     if (showRegisterLink) {
-        showRegisterLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            loginForm.reset();
-            showPage(registerPage, 0);
-        });
+        showRegisterLink.addEventListener('click', showRegister);
+    }
+
+    function showLogin(e) {
+        e.preventDefault();
+        registerForm.reset();
+        showPage(loginPage, 0);
     }
 
     //loginLink()
     if (loginLink) {
-        loginLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            registerForm.reset();
-            showPage(loginPage, 0);
+        loginLink.addEventListener('click', showLogin);
+    }
+
+
+    async function register(e) {
+        e.preventDefault();
+
+        const username_r = document.getElementById('username_register').value.trim();
+        const password_r = document.getElementById('password_register').value;
+        const firstName_r = document.getElementById('first-name').value;
+        const lastName_r = document.getElementById('last-name').value;
+        const address_r = document.getElementById('address').value;
+
+        console.log('Registration attempt with:', {
+            username_r, password_r, firstName_r, lastName_r, address_r
         });
+
+        if (!verifyInputs(username_r, password_r, firstName_r, lastName_r, address_r)) {
+            return;
+        }
+
+
+        const urlParams = new URLSearchParams();
+        urlParams.append('username', username_r);
+        urlParams.append('password', password_r);
+        urlParams.append('firstName', firstName_r);
+        urlParams.append('lastName', lastName_r);
+        urlParams.append('address', address_r);
+        fetch('register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: urlParams
+        })
+            .then(response => {
+                if(!response.ok){
+                    return response.json().then(errData => {
+                        throw new Error(errData.error || 'Unknown error');
+                    });
+
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Registration successful:', data);
+                showMessage(data.message);
+                showPage(loginPage, 0)
+            })
+            .catch(error => {
+                console.error('operation failed.:', error.message);
+                showError(error.message);
+            })
     }
 
     //register()
     if (registerForm) {
-        registerForm.addEventListener('submit', async function(e) {
+        registerForm.addEventListener('submit', register);
+    }
+
+    /**
+     * initiate the event listeners for the sell page
+     */
+
+    async function uploadItem(e) {
+        e.preventDefault();
+
+        const itemName = uploadItemForm.querySelector('input[name="item"]').value;
+        const price = uploadItemForm.querySelector('input[name="price"]').value;
+        const description = uploadItemForm.querySelector('textarea[name="description"]').value;
+        const coverImage = uploadItemForm.querySelector('input[name="cover"]').files[0];
+
+        if (!itemName || !price || !description || !coverImage) {
+            showError('Please fill in all required fields');
+            return;
+        }
+
+        if (isNaN(price) || Number(price) <= 0) {
+            showError('Price must be a positive number');
+            return;
+        }
+
+        const formData = new FormData(e.target);
+        console.log('Uploading item:', { itemName, price, description, coverImage });
+
+        await fetch('uploadItem', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if(!response.ok){
+                    return response.json().then(errData => {
+                        throw new Error(errData.error || 'Unknown error');
+                    });
+
+                }
+                return response.json();
+            })
+            .then(data => {
+                showMessage(data.message);
+                showPage(sellPage, 0)
+            })
+            .catch(error => {
+                console.error('operation failed.:', error.message);
+                showError(error.message);
+            });
+        e.target.reset();
+
+    }
+
+    if (sellPage) {
+        //uploadItem()
+        if (uploadItemForm) {
+            uploadItemForm.addEventListener('submit', uploadItem);
+        }
+
+        async function createAuction(e) {
             e.preventDefault();
 
-            const username_r = document.getElementById('username_register').value.trim();
-            const password_r = document.getElementById('password_register').value;
-            const firstName_r = document.getElementById('first-name').value;
-            const lastName_r = document.getElementById('last-name').value;
-            const address_r = document.getElementById('address').value;
+            const title = createAuctionForm.querySelector('input[name="title"]').value;
+            const minIncrement = createAuctionForm.querySelector('input[name="minIncrement"]').value;
+            const endDate = createAuctionForm.querySelector('input[name="endDate"]').value;
+            const selectedItems = Array.from(
+                createAuctionForm.querySelectorAll('input[name="selectedItems"]:checked')
+            ).map(input => input.value);
 
-            console.log('Registration attempt with:', {
-                username_r, password_r, firstName_r, lastName_r, address_r
-            });
-
-            if (!verifyInputs(username_r, password_r, firstName_r, lastName_r, address_r)) {
+            if (!title || !minIncrement || !endDate || selectedItems.length === 0) {
+                showError('Please fill in all fields and select at least one item');
                 return;
             }
 
-
             const urlParams = new URLSearchParams();
-            urlParams.append('username', username_r);
-            urlParams.append('password', password_r);
-            urlParams.append('firstName', firstName_r);
-            urlParams.append('lastName', lastName_r);
-            urlParams.append('address', address_r);
-            fetch('register', {
+            urlParams.append('title', title);
+            urlParams.append('minIncrement', minIncrement);
+            urlParams.append('endDate', endDate);
+            selectedItems.forEach(itemId => {
+                urlParams.append('selectedItems', itemId);
+            });
+
+            console.log('Creating auction:', { title, minIncrement, endDate, selectedItems });
+
+            if (isNaN(minIncrement) || Number(minIncrement) <= 0 || !Number.isInteger(Number.parseInt(minIncrement))) {
+                showError('minimum increment must be a positive integer number');
+                return;
+            }
+
+            const endDate_Object = new Date(endDate);
+
+            if (endDate_Object <= now) {
+                showError('End date must be in the future');
+                return;
+            }
+
+            console.log('Creating auction:', { title, minIncrement, endDate, selectedItems });
+
+            await fetch('auction', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: urlParams
             })
@@ -948,318 +1092,201 @@ document.addEventListener('DOMContentLoaded', function() {
                         return response.json().then(errData => {
                             throw new Error(errData.error || 'Unknown error');
                         });
-
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Registration successful:', data);
                     showMessage(data.message);
-                    showPage(loginPage, 0)
+                    showPage(sellPage, 0).then(() =>{
+                        window.scrollTo(0, 0);
+                        localStorage.setItem('lastPage', 'sell_page');
+                    });
                 })
                 .catch(error => {
                     console.error('operation failed.:', error.message);
                     showError(error.message);
                 });
-        });
-    }
-
-    /**
-     * initiate the event listeners for the sell page
-     */
-
-    if (sellPage) {
-        //uploadItem()
-        if (uploadItemForm) {
-            uploadItemForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                const itemName = uploadItemForm.querySelector('input[name="item"]').value;
-                const price = uploadItemForm.querySelector('input[name="price"]').value;
-                const description = uploadItemForm.querySelector('textarea[name="description"]').value;
-                const coverImage = uploadItemForm.querySelector('input[name="cover"]').files[0];
-
-                if (!itemName || !price || !description || !coverImage) {
-                    showError('Please fill in all required fields');
-                    return;
-                }
-
-                if (isNaN(price) || Number(price) <= 0) {
-                    showError('Price must be a positive number');
-                    return;
-                }
-
-                const formData = new FormData(e.target);
-                console.log('Uploading item:', { itemName, price, description, coverImage });
-
-                await fetch('uploadItem', {
-                    method: 'POST',
-                    body: formData
-                })
-                    .then(response => {
-                        if(!response.ok){
-                            return response.json().then(errData => {
-                                throw new Error(errData.error || 'Unknown error');
-                            });
-
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        showMessage(data.message);
-                        showPage(sellPage, 0)
-                    })
-                    .catch(error => {
-                        console.error('operation failed.:', error.message);
-                        showError(error.message);
-                    });
-                e.target.reset();
-
-            });
+            createAuctionForm.reset();
         }
-
         //createAuction()
         if (createAuctionForm) {
-            createAuctionForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                const title = createAuctionForm.querySelector('input[name="title"]').value;
-                const minIncrement = createAuctionForm.querySelector('input[name="minIncrement"]').value;
-                const endDate = createAuctionForm.querySelector('input[name="endDate"]').value;
-                const selectedItems = Array.from(
-                    createAuctionForm.querySelectorAll('input[name="selectedItems"]:checked')
-                ).map(input => input.value);
-
-                if (!title || !minIncrement || !endDate || selectedItems.length === 0) {
-                    showError('Please fill in all fields and select at least one item');
-                    return;
-                }
-
-                const urlParams = new URLSearchParams();
-                urlParams.append('title', title);
-                urlParams.append('minIncrement', minIncrement);
-                urlParams.append('endDate', endDate);
-                selectedItems.forEach(itemId => {
-                    urlParams.append('selectedItems', itemId);
-                });
-
-                console.log('Creating auction:', { title, minIncrement, endDate, selectedItems });
-
-                if (isNaN(minIncrement) || Number(minIncrement) <= 0 || !Number.isInteger(Number.parseInt(minIncrement))) {
-                    showError('minimum increment must be a positive integer number');
-                    return;
-                }
-
-                const endDate_Object = new Date(endDate);
-
-                if (endDate_Object <= now) {
-                    showError('End date must be in the future');
-                    return;
-                }
-
-                console.log('Creating auction:', { title, minIncrement, endDate, selectedItems });
-
-                await fetch('auction', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: urlParams
-                })
-                    .then(response => {
-                        if(!response.ok){
-                            return response.json().then(errData => {
-                                throw new Error(errData.error || 'Unknown error');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        showMessage(data.message);
-                        showPage(sellPage, 0).then(() =>{
-                            window.scrollTo(0, 0);
-                            localStorage.setItem('lastPage', 'sell_page');
-                        });
-                    })
-                    .catch(error => {
-                        console.error('operation failed.:', error.message);
-                        showError(error.message);
-                    });
-                createAuctionForm.reset();
-            });
+            createAuctionForm.addEventListener('submit',createAuction);
         }
     }
 
+    async function search(e){
+        e.preventDefault();
+
+        const keywords = document.getElementById('keywords').value || '';
+
+        const urlParams = new URLSearchParams();
+        urlParams.append('keywords', keywords);
+
+        const response = await fetch(`buy?keywords=${encodeURIComponent(keywords)}`);
+
+        if(!response.ok){
+            showError('Failed to search auctions');
+            return;
+        }
+
+        const data = await response.json();
+        const resultAuctions = data.openAuctions;
+        resultsTable.innerHTML = '';
+
+        if(resultAuctions.length === 0){
+            noResultSpan.style.display = 'block';
+        }else{
+            noResultSpan.style.display = 'none';
+            resultAuctions.forEach(resultAuction => {
+                const tr = document.createElement('tr');
+
+                const tdId = document.createElement('td');
+                const a = document.createElement('a');
+                a.href = `#`;
+                a.textContent = resultAuction.auction.auctionId;
+                a.dataset.id = resultAuction.auction.auctionId;
+                a.addEventListener('click', () => {
+                    saveHistory(a.dataset.id);
+                    showPage(offerPage, a.dataset.id);
+                });
+
+                tdId.appendChild(a);
+                tr.appendChild(tdId);
+
+                const tdItems = document.createElement('td');
+                resultAuction.items.forEach(item => {
+                    const div = document.createElement('div');
+                    const img = document.createElement('img');
+                    img.src = '/auction_ria/' + item.cover_image;
+                    img.alt = 'Item image';
+                    img.style.width = '30px';
+                    img.style.height = '30px';
+                    img.style.marginLeft = '5px';
+                    const span = document.createElement('span');
+                    span.textContent = item.title;
+                    div.appendChild(img);
+                    div.appendChild(span);
+                    tdItems.appendChild(div);
+                });
+                tr.appendChild(tdItems);
+
+                const tdMax = document.createElement('td');
+                tdMax.textContent = resultAuction.maxOffer;
+                tr.appendChild(tdMax);
+
+                const tdTime = document.createElement('td');
+                tdTime.textContent = resultAuction.timeLeft;
+                tr.appendChild(tdTime);
+
+                resultsTable.appendChild(tr);
+            });
+        }
+        console.log('Searching for:', keywords);
+    }
     /**
      * initiate the event listeners for the buy page
      */
     if (buyPage) {
         //search()
         if (searchForm) {
-            searchForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
+            searchForm.addEventListener('submit',search);
+        }
+    }
 
-                const keywords = document.getElementById('keywords').value || '';
+    async function offer(e) {
+        e.preventDefault();
 
-                const urlParams = new URLSearchParams();
-                urlParams.append('keywords', keywords);
+        const offeredPrice = offerForm.querySelector('input[name="offeredPrice"]').value;
+        const minimumOffer = parseFloat(offerForm.querySelector('input[name="offeredPrice"]').min);
 
-                const response = await fetch(`buy?keywords=${encodeURIComponent(keywords)}`);
+        const auctionId = offerPage.querySelector('.auction-details').dataset.id;
+        const MAX = 1e15;
 
+        if (!offeredPrice) {
+            showError('Please enter an offer price');
+            return;
+        }else if (parseFloat(offeredPrice) < minimumOffer) {
+            showError(`Your offer must be at least € ${minimumOffer}`);
+            return;
+        }else if(parseFloat(offeredPrice) > MAX){
+            showError(`Your offer must be less than or equal to € ${MAX}`);
+            return;
+        }
+
+        const urlParams = new URLSearchParams();
+        urlParams.append('offeredPrice', offeredPrice);
+        urlParams.append('id', auctionId);
+
+        await fetch('offer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: urlParams
+        })
+            .then(response => {
                 if(!response.ok){
-                    showError('Failed to search auctions');
-                    return;
-                }
-
-                const data = await response.json();
-                const resultAuctions = data.openAuctions;
-                resultsTable.innerHTML = '';
-
-                if(resultAuctions.length === 0){
-                    noResultSpan.style.display = 'block';
-                }else{
-                    noResultSpan.style.display = 'none';
-                    resultAuctions.forEach(resultAuction => {
-                        const tr = document.createElement('tr');
-
-                        const tdId = document.createElement('td');
-                        const a = document.createElement('a');
-                        a.href = `#`;
-                        a.textContent = resultAuction.auction.auctionId;
-                        a.dataset.id = resultAuction.auction.auctionId;
-                        a.addEventListener('click', () => {
-                            saveHistory(a.dataset.id);
-                            showPage(offerPage, a.dataset.id);
-                        });
-
-                        tdId.appendChild(a);
-                        tr.appendChild(tdId);
-
-                        const tdItems = document.createElement('td');
-                        resultAuction.items.forEach(item => {
-                            const div = document.createElement('div');
-                            const img = document.createElement('img');
-                            img.src = '/auction_war/' + item.cover_image;
-                            img.alt = 'Item image';
-                            img.style.width = '30px';
-                            img.style.height = '30px';
-                            img.style.marginLeft = '5px';
-                            const span = document.createElement('span');
-                            span.textContent = item.title;
-                            div.appendChild(img);
-                            div.appendChild(span);
-                            tdItems.appendChild(div);
-                        });
-                        tr.appendChild(tdItems);
-
-                        const tdMax = document.createElement('td');
-                        tdMax.textContent = resultAuction.maxOffer;
-                        tr.appendChild(tdMax);
-
-                        const tdTime = document.createElement('td');
-                        tdTime.textContent = resultAuction.timeLeft;
-                        tr.appendChild(tdTime);
-
-                        resultsTable.appendChild(tr);
+                    return response.json().then(errData => {
+                        throw new Error(errData.error || 'Unknown error');
                     });
                 }
-                console.log('Searching for:', keywords);
+                return response.json();
+            })
+            .then(data => {
+                showMessage(data.message);
+                showPage(offerPage, auctionId);
+            })
+            .catch(error => {
+                console.error('operation failed.:', error.message);
+                showError(error.message);
             });
-        }
+        offerForm.reset();
     }
 
     // initiate make offer form event listener OFFERTA.html
     if (offerPage) {
         //offer()
         if (offerForm) {
-            offerForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                const offeredPrice = offerForm.querySelector('input[name="offeredPrice"]').value;
-                const minimumOffer = parseFloat(offerForm.querySelector('input[name="offeredPrice"]').min);
-
-                const auctionId = offerPage.querySelector('.auction-details').dataset.id;
-                const MAX = 1e15;
-
-                if (!offeredPrice) {
-                    showError('Please enter an offer price');
-                    return;
-                }else if (parseFloat(offeredPrice) < minimumOffer) {
-                    showError(`Your offer must be at least € ${minimumOffer}`);
-                    return;
-                }else if(parseFloat(offeredPrice) > MAX){
-                    showError(`Your offer must be less than or equal to € ${MAX}`);
-                    return;
-                }
-
-                const urlParams = new URLSearchParams();
-                urlParams.append('offeredPrice', offeredPrice);
-                urlParams.append('id', auctionId);
-
-                await fetch('offer', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: urlParams
-                })
-                    .then(response => {
-                        if(!response.ok){
-                            return response.json().then(errData => {
-                                throw new Error(errData.error || 'Unknown error');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        showMessage(data.message);
-                        showPage(offerPage, auctionId);
-                    })
-                    .catch(error => {
-                        console.error('operation failed.:', error.message);
-                        showError(error.message);
-                    });
-                offerForm.reset();
-            });
+            offerForm.addEventListener('submit', offer);
         }
     }
 
+    async function close(e) {
+        e.preventDefault();
+
+        const auctionId = closeAuctionForm.querySelector('button').value;
+        console.log('Closing auction:', auctionId);
+
+        const urlParams = new URLSearchParams();
+        urlParams.append('id', auctionId);
+
+            const response = await fetch('close', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: urlParams
+            }).then(response => {
+                if (!response.ok) {
+                    return response.json().then(errData => {
+                        throw new Error(errData.error || 'Unknown error');
+                    });
+                }
+                return response.json();
+            })
+                .then(data => {
+                    showMessage(data.message);
+                    showPage(detailPage, auctionId);
+                })
+                .catch(error => {
+                    console.error('operation failed.:', error.message);
+                    showError(error.message);
+                });
+    }
     //DETTAGLIO.html
     if (detailPage) {
         if (closeAuctionForm) {
-            closeAuctionForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                const auctionId = closeAuctionForm.querySelector('button').value;
-                console.log('Closing auction:', auctionId);
-
-                const urlParams = new URLSearchParams();
-                urlParams.append('id', auctionId);
-
-                await fetch('close', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: urlParams
-                })
-                    .then(response => {
-                        if(!response.ok){
-                            return response.json().then(errData => {
-                                throw new Error(errData.error || 'Unknown error');
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        showMessage(data.message);
-                        showPage(detailPage, auctionId);
-                    })
-                    .catch(error => {
-                        console.error('operation failed.:', error.message);
-                        showError(error.message);
-                    });
-            });
+            closeAuctionForm.addEventListener('submit', close);
         }
     }
 

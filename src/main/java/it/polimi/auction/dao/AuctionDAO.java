@@ -597,12 +597,16 @@ public class AuctionDAO {
         }
 
         // find all open auctions that are not expired and in the list of visited auctions
-        String sql = "SELECT * FROM auctions WHERE id IN (" + inClause + ") AND closed = 0";
+        String sql = "SELECT * FROM auctions WHERE id IN (" + inClause + ") AND closed = 0 " +
+                "ORDER BY FIELD(id, " + inClause + ")";
 
         try (PreparedStatement stmt = con.prepareStatement(sql)) {
 
             for (int i = 0; i < visitedAuctions.length; i++) {
                 stmt.setString(i + 1, visitedAuctions[i]);
+            }
+            for (int i = 0; i < visitedAuctions.length; i++) {
+                stmt.setString(visitedAuctions.length + i + 1, visitedAuctions[i]); // for FIELD
             }
             try(ResultSet rs = stmt.executeQuery()){
                 List<Auction> auctions = new ArrayList<>();

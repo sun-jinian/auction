@@ -37,7 +37,6 @@ public class SellServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json; charset=UTF-8");
         response.setCharacterEncoding("UTF-8");
-        response.setHeader("Access-Control-Allow-Origin", "*");
 
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {

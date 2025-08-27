@@ -15,7 +15,6 @@ public class HomeServlet extends HttpServlet {
 
 
     @Override
-
     protected void doGet(jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response)
             throws java.io.IOException {
         HttpSession session = request.getSession(false);

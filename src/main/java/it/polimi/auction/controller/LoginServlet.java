@@ -66,6 +66,15 @@ public class LoginServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
         String logout = request.getParameter("logout");
+        if(logout == null){
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            try {
+                response.getWriter().write("{\"error\": \"You are not logged in\"}");
+            } catch (IOException e) {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            }
+            return;
+        }
 
         if(logout.equals("1")){
             HttpSession session = request.getSession(false);

@@ -58,6 +58,16 @@ public class AuctionServlet extends HttpServlet {
                 auction_id = Integer.parseInt(auction_id_Str);
                 AuctionDAO auctionDAO = new AuctionDAO(DBUtil.getConnection());
                 Auction auction = auctionDAO.findById(auction_id);
+                if(auction == null){
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write("{\"error\": \"auction not found\"}");
+                    return;
+                }
+                if(auction.getUserId() != user.getId()){
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("{\"error\": \"user not authorized to view this auction\"}");
+                    return;
+                }
                 List<Offer> offers = auctionDAO.findAllOffersByAuction(auction_id);
                 ItemDAO itemDAO = new ItemDAO(DBUtil.getConnection());
                 List<Item> items = itemDAO.findAllItemInAuction(auction_id);

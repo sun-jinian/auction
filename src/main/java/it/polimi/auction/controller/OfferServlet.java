@@ -69,6 +69,13 @@ public class OfferServlet extends HttpServlet {
                     return;
                 }
 
+                if(auction.isClosed()){
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    responseData.put("error", "Auction is closed");
+                    response.getWriter().write(gson.toJson(responseData));
+                    return;
+                }
+
                 List<Offer> offers = auctionDAO.findAllOffersByAuction(auctionId);
                 List<Item> items = itemDAO.findAllItemInAuction(auctionId);
 
