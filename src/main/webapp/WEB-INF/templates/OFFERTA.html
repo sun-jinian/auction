@@ -112,11 +112,9 @@
     <tr th:each="item : ${items}">
         <td th:text="${item.id}">test_id</td>
         <td>
-            <div th:each="item : ${items}">
-                <img th:src="@{${item.cover_image}}" alt="Item image"
-                     style="width:30px;height:30px;margin-left:5px;">
-                <span th:text="${item.title}">test_item_title</span>
-            </div>
+            <img th:src="@{${item.cover_image}}" alt="Item image"
+                 style="width:30px;height:30px;margin-left:5px;">
+            <span th:text="${item.title}">test_item_title</span>
         </td>
         <td th:text="${item.description}">test_item_title</td>
         <td th:text="${item.price}">test_item_price</td>
