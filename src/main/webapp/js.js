@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const offerForm = document.getElementById('offer-form');
     const offerInput = offerForm.querySelector('input');
-    const itemTable = document.getElementById('offer-page-items');
+    const itemTable_offer = document.getElementById('offer-page-items');
 
     const itemTable_detail = document.getElementById('detail-page-items');
 
@@ -456,7 +456,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     tr.appendChild(tdId);
 
                     const tdItems = document.createElement('td');
-                    tdItems.className = 'col-articoli';
                     closedAuction.items.forEach(item => {
                         const div = document.createElement('div');
                         div.style.whiteSpace = 'nowrap';
@@ -614,7 +613,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 offers.forEach(offer => {
                     const tr = document.createElement('tr');
-                    tr.className = 'col-articoli';
                     const tdId = document.createElement('td');
                     tdId.textContent = offer.id;
                     tr.appendChild(tdId);
@@ -654,7 +652,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 items.forEach(item => {
                     const tr = document.createElement('tr');
-                    tr.className = 'col-articoli';
 
                     // tdId
                     const tdId = document.createElement('td');
@@ -708,6 +705,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return response;
                 });
                 offerTable_offer.innerHTML = '';
+                itemTable_offer.innerHTML = '';
                 detail_offer.dataset.id = auctionId;
 
                 const data = await response.json();
@@ -759,7 +757,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 items.forEach(item => {
                     const tr = document.createElement('tr');
-                    tr.className = 'col-articoli';
 
                     // tdId
                     const tdId = document.createElement('td');
@@ -789,7 +786,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     tdPrice.textContent = item.price;
                     tr.appendChild(tdPrice);
 
-                    itemTable.appendChild(tr);
+                    itemTable_offer.appendChild(tr);
                 });
                 localStorage.setItem('lastPage', 'buy_page');
 
