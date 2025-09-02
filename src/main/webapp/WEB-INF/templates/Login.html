@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>User Login - Music Playlist System</title>
-    <link rel="stylesheet" type="text/css" href="CSS/main.css">
+    <title>User Login</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/CSS/main.css}">
 </head>
 <body>
 <div class="container">
@@ -30,7 +30,7 @@
     <p class="register-link">Don't have an account? <a href="Register.html">Register now</a></p>
 </div>
 
-<div th:if="${error}" class="error-alert">
+<div style="display: flex; justify-content: center; margin-top: 10px;">
     <p th:text="${error}" style="color: red;"></p>
 </div>
 

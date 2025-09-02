@@ -64,7 +64,7 @@ public class SellServlet extends HttpServlet {
                 templateEngine.process("SellPage", context, response.getWriter());
 
             }catch (SQLException e) {
-                context.setVariable("error", "Failed to load auctions: " + e.getMessage());
+                context.setVariable("error", "Failed to load auctions");
                 templateEngine.process("SellPage", context, response.getWriter());
             }
 

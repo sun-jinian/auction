@@ -1,15 +1,11 @@
 package it.polimi.auction;
 
-import it.polimi.auction.beans.Auction;
 import it.polimi.auction.beans.User;
-import it.polimi.auction.dao.AuctionDAO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
 
 public class Util {
     public static User verifySession(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -20,5 +16,14 @@ public class Util {
         }
 
         return (User) session.getAttribute("user");
+    }
+
+    // Helper method to require a parameter in a request or throw an exception if it's missing
+    public static String requireParameter(HttpServletRequest request, String name) {
+        String value = request.getParameter(name);
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Missing required parameter: " + name);
+        }
+        return value;
     }
 }

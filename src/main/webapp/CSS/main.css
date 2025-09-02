@@ -15,19 +15,22 @@ body {
     margin: 0 auto;
 }
 
-.sell-btn, .buy-btn {
+/* button general style */
+.sell-btn, .buy-btn, .btn-logout, button {
     padding: 10px 20px;
     font-size: 16px;
+    border-radius: 5px;
     color: white;
     text-decoration: none;
-    border-radius: 5px;
-    transition: background-color 0.3s, transform 0.3s;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    border: none;
 }
 
+/* Sell/Buy button */
 .sell-btn {
     background-color: #28a745;
 }
-
 .sell-btn:hover {
     background-color: #218838;
     transform: scale(1.05);
@@ -36,113 +39,46 @@ body {
 .buy-btn {
     background-color: #007bff;
 }
-
 .buy-btn:hover {
     background-color: #0056b3;
     transform: scale(1.05);
 }
 
-.form-group {
-    margin-bottom: 15px;
-
-}
-
-label {
-    margin-bottom: 5px;
-    padding: 5px;
-}
-
-input[type="text"],
-input[type="password"],
-input[type="number"],
-select {
-    width: 50%;
-    padding: 8px;
-    border: 1px solid #ddd;
-}
-
-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-.logo {
-    margin: 0;
-    font-size: 1.8rem;
-}
-
-.user-info {
-    display: flex;
-    gap: 1.5rem;
-    align-items: center;
-}
-
+/* Logout button */
 .btn-logout {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
     background-color: #e74c3c;
-    transition: background-color 0.2s;
 }
-
 .btn-logout:hover {
     background-color: #c0392b;
 }
 
-.auction-list {
-    table-layout: auto;
-    width: 100%;
-    border-collapse: collapse;
+/* from general style */
+.form-group {
+    margin-bottom: 15px;
 }
-
-.auction-list th,
-.auction-list td {
+label {
+    margin-bottom: 5px;
+    padding: 5px;
+    display: block;
+}
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select,
+textarea,
+input[type="file"] {
+    width: 50%;
     padding: 8px;
-    vertical-align: top;
-    height: auto;
-    white-space: normal;
-    word-break: break-word;
+    border: 1px solid #ddd;
+}
+textarea {
+    resize: vertical;
+}
+button {
+    background-color: #007bff;
 }
 
-.col-articoli {
-    min-width: max-content;
-}
-
-.item-list {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-.item-list input.item-checkbox {
-    margin-right: 10px;
-}
-.item-list table {
-    border-collapse: collapse;
-    width: auto;
-}
-.item-list th, .item-list td {
-    border: 1px solid #ccc;
-    padding: 4px 8px;
-}
-
-.register-link {
-    text-align: center;
-    margin-top: 1.5rem;
-}
-
-.register-link a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.register-link a:hover {
-    text-decoration: underline;
-}
-
+/* register form grid */
 .name-fields {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -150,76 +86,71 @@ button {
     margin-bottom: 1.2rem;
 }
 
-.alert {
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-    color: #721c24;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
+/* form style */
+.auction-list, table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
 }
 
-.alert.hidden {
-    display: none;
-}
-
-.pagination {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin: 1rem 0;
-}
-
-.btn-paginate {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background-color: #f0f0f0;
-    color: #333;
+.auction-list th,
+.auction-list td,
+table th,
+table td {
+    padding: 8px;
     border: 1px solid #ddd;
+    vertical-align: top;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+table th {
+    background-color: #f2f2f2;
+}
+
+/* alert style */
+.alert,
+.error-alert,
+.message-alert {
+    padding: 12px;
     border-radius: 4px;
-    text-decoration: none;
-    transition: all 0.2s ease;
+    margin-bottom: 15px;
+    display: none;
+    gap: 0.5rem;
 }
-
-.btn-paginate:hover:not(.disabled) {
-    background-color: #e0e0e0;
-    border-color: #ccc;
-    cursor: pointer;
+.error-alert p {
+    color: red;
 }
-
-.btn-paginate.disabled {
-    background-color: #f8f9fa;
-    color: #6c757d;
-    border-color: #dee2e6;
-    pointer-events: none;
-    opacity: 0.7;
+.message-alert p {
+    color: green;
 }
-
-.description-input {
-    height: 40px;
-    padding: 8px 10px;
-    font-size: 16px;
-}
-
-.pagination span {
-    color: #666;
-    font-size: 0.9em;
+.alert.show,
+.error-alert.show,
+.message-alert.show {
+    display: flex;
 }
 
 .navbar {
-    background-color: #2c3e50;
-    padding: 1rem 0;
-    margin-bottom: 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: #2c3e50;
+    color: white;
+    margin-bottom: 2rem;
 }
 
-.upload-section {
-    margin-top: 3rem;
-    padding: 2rem;
-    background: #f8f9fa;
-    border-radius: 8px;
+.navbar .left,
+.navbar .right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.navbar .center {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .form-row {
@@ -229,38 +160,14 @@ button {
     margin-bottom: 1.5rem;
 }
 
-input[type="file"] {
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    background: white;
-    width: 100%;
-}
-
-#cover-art {
-    width: 50px;
-    height: 50px;
-    border-radius: 4px;
-    object-fit: cover;
-}
-
-
-.auction-details, .offers-table {
+.auction-details,
+.offers-table {
     border: 1px solid #ccc;
     padding: 15px;
     margin-bottom: 20px;
     border-radius: 5px;
 }
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-table th, table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-}
-table th {
-    background-color: #f2f2f2;
-}
+
 .back-link {
     display: inline-block;
     margin-top: 15px;

@@ -3,6 +3,7 @@ package it.polimi.auction.controller;
 import it.polimi.auction.DBUtil;
 import it.polimi.auction.Util;
 import it.polimi.auction.beans.Auction;
+import it.polimi.auction.beans.Item;
 import it.polimi.auction.beans.Offer;
 import it.polimi.auction.beans.User;
 import it.polimi.auction.dao.AuctionDAO;
@@ -22,6 +23,8 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import static it.polimi.auction.Util.requireParameter;
 
 @WebServlet("/auction")
 public class AuctionServlet extends HttpServlet {
@@ -49,24 +52,45 @@ public class AuctionServlet extends HttpServlet {
         }
 
         String auction_id_Str = request.getParameter("id");
+
+        if (auction_id_Str == null || auction_id_Str.isEmpty()) {
+            request.setAttribute("error", "No auction id provided");
+            request.getRequestDispatcher("/auction").forward(request, response);
+            return;
+        }
+
         int auction_id;
         if(session.getAttribute("user") instanceof User user){
             try {
-                auction_id = Integer.parseInt(auction_id_Str);
-                AuctionDAO auctionDAO = new AuctionDAO(DBUtil.getConnection());
-                Auction auction = auctionDAO.findById(auction_id);
-                List<Offer> offers = auctionDAO.findAllOffersByAuction(auction_id);
-
                 WebContext context = new WebContext(
                         JakartaServletWebApplication.buildApplication(getServletContext())
                                 .buildExchange(request, response),
                         request.getLocale()
                 );
+
+                auction_id = Integer.parseInt(auction_id_Str);
+                AuctionDAO auctionDAO = new AuctionDAO(DBUtil.getConnection());
+                Auction auction = auctionDAO.findById(auction_id);
+                if(auction == null){
+                    context.setVariable("error", "No auction found with id: " + auction_id);
+                    templateEngine.process("Error", context, response.getWriter());
+                    return;
+                }
+                if(auction.getUserId() != user.getId()){
+                    context.setVariable("error", "You are not authorized to view this auction");
+                    templateEngine.process("Error", context, response.getWriter());
+                    return;
+                }
+                List<Offer> offers = auctionDAO.findAllOffersByAuction(auction_id);
+                ItemDAO itemDAO = new ItemDAO(DBUtil.getConnection());
+                List<Item> items = itemDAO.findAllItemInAuction(auction_id);
+
                 boolean trulyCloseable = auction.getEnding_at().isBefore(LocalDateTime.now()) && !auction.isClosed();
                 context.setVariable("closeable", trulyCloseable);
                 context.setVariable("auction", auction);
                 context.setVariable("offers", offers);
                 context.setVariable("user", user);
+                context.setVariable("items", items);
 
                 templateEngine.process("DETTAGLIO", context, response.getWriter());
 
@@ -124,11 +148,5 @@ public class AuctionServlet extends HttpServlet {
         }
     }
 
-    private String requireParameter(HttpServletRequest request, String name) throws ServletException {
-        String value = request.getParameter(name);
-        if (value == null || value.isBlank()) {
-            throw new ServletException("Missing required parameter: " + name);
-        }
-        return value;
-    }
+
 }
